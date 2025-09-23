@@ -9,25 +9,30 @@ import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 
 public class GivenSummaryFragment extends Fragment {
+    private LinearLayout layout;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_given_summary, container, false);
+        View v = inflater.inflate(R.layout.fragment_given_summary, container, false);
+        layout = v.findViewById(R.id.summaryLayout);
+        refreshView();
+        return v;
+    }
+
+    public void refreshView() {
+        if (layout == null) return;
+        layout.removeAllViews();
+        for (String name : GivenFragment.givenMap.keySet()) {
+            int amount = GivenFragment.givenMap.get(name);
+            TextView tv = new TextView(getContext());
+            tv.setText(name + ": ₹" + amount);
+            layout.addView(tv);
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        View v = getView();
-        if (v != null) {
-            LinearLayout layout = v.findViewById(R.id.summaryLayout);
-            layout.removeAllViews();
-
-            for (String name : GivenFragment.givenMap.keySet()) {
-                int amount = GivenFragment.givenMap.get(name);
-                TextView tv = new TextView(getContext());
-                tv.setText(name + ": ₹" + amount);
-                layout.addView(tv);
-            }
-        }
+        refreshView();
     }
 }
