@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
@@ -17,7 +18,6 @@ public class ReceivedFragment extends Fragment {
     private EditText nameInput, amountInput;
     private Button addButton;
 
-    // Static map so summaries can access data
     public static HashMap<String, Integer> receivedMap = new HashMap<>();
 
     @Override
@@ -28,13 +28,20 @@ public class ReceivedFragment extends Fragment {
         addButton = v.findViewById(R.id.buttonAdd);
 
         addButton.setOnClickListener(view -> {
-            String name = nameInput.getText().toString();
-            String amountStr = amountInput.getText().toString();
+            String name = nameInput.getText().toString().trim();
+            String amountStr = amountInput.getText().toString().trim();
             if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(amountStr)) {
-                int amount = Integer.parseInt(amountStr);
-                receivedMap.put(name, amount);
-                nameInput.setText("");
-                amountInput.setText("");
+                try {
+                    int amount = Integer.parseInt(amountStr);
+                    receivedMap.put(name, amount);
+                    Toast.makeText(getContext(), "Added " + name + ": ₹" + amount, Toast.LENGTH_SHORT).show();
+                    nameInput.setText("");
+                    amountInput.setText("");
+                } catch (NumberFormatException e) {
+                    Toast.makeText(getContext(), "Invalid amount", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(getContext(), "Please enter both name and amount", Toast.LENGTH_SHORT).show();
             }
         });
 
