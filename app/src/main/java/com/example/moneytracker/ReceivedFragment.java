@@ -33,10 +33,15 @@ public class ReceivedFragment extends Fragment {
             if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(amountStr)) {
                 try {
                     int amount = Integer.parseInt(amountStr);
+                    if (receivedMap.containsKey(name)) {
+                        amount += receivedMap.get(name);
+                    }
                     receivedMap.put(name, amount);
                     Toast.makeText(getContext(), "Added " + name + ": ₹" + amount, Toast.LENGTH_SHORT).show();
                     nameInput.setText("");
                     amountInput.setText("");
+
+                    refreshSummary();
                 } catch (NumberFormatException e) {
                     Toast.makeText(getContext(), "Invalid amount", Toast.LENGTH_SHORT).show();
                 }
@@ -46,5 +51,16 @@ public class ReceivedFragment extends Fragment {
         });
 
         return v;
+    }
+
+    private void refreshSummary() {
+        if (getActivity() != null) {
+            ReceivedSummaryFragment fragment = (ReceivedSummaryFragment) getActivity()
+                    .getSupportFragmentManager()
+                    .findFragmentByTag("f3");  // Fourth tab index tag "f3"
+            if (fragment != null) {
+                fragment.refreshView();
+            }
+        }
     }
 }
