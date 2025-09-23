@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Money Tracker</string>
+    <string name="tab_given">I Gave</string>
+    <string name="tab_received">I Received</string>
+    <string name="tab_given_summary">Gave Summary</string>
+    <string name="tab_received_summary">Received Summary</string>
+    <string name="hint_name">Name</string>
+    <string name="hint_amount">Amount</string>
+    <string name="add">Add</string>
+</resources>
