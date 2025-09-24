@@ -10,7 +10,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 public class MainActivity extends AppCompatActivity {
 
-    private String[] titles = {"I Gave", "I Received", "Gave Summary", "Received Summary"};
+    private String[] titles = {"I Gave", "I Received", "Summary"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
