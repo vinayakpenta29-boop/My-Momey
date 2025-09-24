@@ -17,14 +17,13 @@ public class TabAdapter extends FragmentStateAdapter {
         switch (position) {
             case 0: return new GivenFragment();
             case 1: return new ReceivedFragment();
-            case 2: return new GivenSummaryFragment();
-            case 3: return new ReceivedSummaryFragment();
+            case 2: return new SummaryFragment();
             default: return new GivenFragment();
         }
     }
 
     @Override
     public int getItemCount() {
-        return 4;
+        return 3;
     }
 }
