@@ -40,24 +40,23 @@ public class ReceivedFragment extends Fragment {
                     Toast.makeText(getContext(), "Added " + name + ": ₹" + amount, Toast.LENGTH_SHORT).show();
                     nameInput.setText("");
                     amountInput.setText("");
-
-                    refreshSummary();
+                    notifySummaryUpdate();
                 } catch (NumberFormatException e) {
                     Toast.makeText(getContext(), "Invalid amount", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Toast.makeText(getContext(), "Please enter both name and amount", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Enter both name and amount", Toast.LENGTH_SHORT).show();
             }
         });
 
         return v;
     }
 
-    private void refreshSummary() {
+    private void notifySummaryUpdate() {
         if (getActivity() != null) {
-            ReceivedSummaryFragment fragment = (ReceivedSummaryFragment) getActivity()
-                    .getSupportFragmentManager()
-                    .findFragmentByTag("f3");  // Fourth tab index tag "f3"
+            SummaryFragment fragment = (SummaryFragment) getActivity()
+                .getSupportFragmentManager()
+                .findFragmentByTag("f2");
             if (fragment != null) {
                 fragment.refreshView();
             }
