@@ -6,12 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.Space;
 import android.widget.TextView;
 
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-
 import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
@@ -42,30 +39,31 @@ public class SummaryFragment extends Fragment {
         allNames.addAll(givenMap.keySet());
         allNames.addAll(receivedMap.keySet());
 
-        // Title for "I Gave"
+        // "I Gave" section title
         TextView gaveTitle = new TextView(getContext());
         gaveTitle.setText("I Gave");
         gaveTitle.setTypeface(null, Typeface.BOLD);
         gaveTitle.setTextSize(18);
         layoutGave.addView(gaveTitle);
 
-        // Display each name and amount from givenMap separately in a box
-        for (String name : givenMap.keySet()) {
-            int amount = givenMap.get(name);
-            layoutGave.addView(createAccountBox(name, amount));
-        }
-
-        // Title for "I Received"
+        // "I Received" section title
         TextView receivedTitle = new TextView(getContext());
         receivedTitle.setText("I Received");
         receivedTitle.setTypeface(null, Typeface.BOLD);
         receivedTitle.setTextSize(18);
         layoutReceived.addView(receivedTitle);
 
-        // Display each name and amount from receivedMap separately in a box
-        for (String name : receivedMap.keySet()) {
-            int amount = receivedMap.get(name);
-            layoutReceived.addView(createAccountBox(name, amount));
+        for (String name : allNames) {
+            int given = givenMap.getOrDefault(name, 0);
+            int received = receivedMap.getOrDefault(name, 0);
+            int balance = given - received;
+
+            if (balance > 0) {
+                layoutGave.addView(createAccountBox(name, balance)); // Positive: I Gave
+            } else if (balance < 0) {
+                layoutReceived.addView(createAccountBox(name, -balance)); // Negative: I Received (show positive)
+            }
+            // If balance == 0, do not display
         }
     }
 
@@ -81,5 +79,11 @@ public class SummaryFragment extends Fragment {
         params.setMargins(0, 10, 0, 10);
         box.setLayoutParams(params);
         return box;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshView();
     }
 }
