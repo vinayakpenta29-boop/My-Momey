@@ -19,7 +19,6 @@ public class GivenFragment extends Fragment {
     private Button addButton;
 
     public static HashMap<String, Integer> givenMap = new HashMap<>();
-    private GivenSummaryFragment summaryFragment;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -34,7 +33,6 @@ public class GivenFragment extends Fragment {
             if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(amountStr)) {
                 try {
                     int amount = Integer.parseInt(amountStr);
-                    // Accumulate amount if name exists
                     if (givenMap.containsKey(name)) {
                         amount += givenMap.get(name);
                     }
@@ -42,26 +40,23 @@ public class GivenFragment extends Fragment {
                     Toast.makeText(getContext(), "Added " + name + ": ₹" + amount, Toast.LENGTH_SHORT).show();
                     nameInput.setText("");
                     amountInput.setText("");
-
-                    // Force refresh summary UI if fragment alive
-                    refreshSummary();
+                    notifySummaryUpdate();
                 } catch (NumberFormatException e) {
                     Toast.makeText(getContext(), "Invalid amount", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Toast.makeText(getContext(), "Please enter both name and amount", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Enter both name and amount", Toast.LENGTH_SHORT).show();
             }
         });
 
         return v;
     }
 
-    private void refreshSummary() {
-        // Try to find fragment and call its update
+    private void notifySummaryUpdate() {
         if (getActivity() != null) {
-            GivenSummaryFragment fragment = (GivenSummaryFragment) getActivity()
-                    .getSupportFragmentManager()
-                    .findFragmentByTag("f2");  // "f2" usually second tab index tag for ViewPager2
+            SummaryFragment fragment = (SummaryFragment) getActivity()
+                .getSupportFragmentManager()
+                .findFragmentByTag("f2"); // third tab index = 2 => "f2"
             if (fragment != null) {
                 fragment.refreshView();
             }
