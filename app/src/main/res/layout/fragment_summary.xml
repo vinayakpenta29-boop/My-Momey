@@ -1,33 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
-    android:weightSum="2"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <!-- Left: I Gave Section -->
+    <!-- Top section: Money should Come -->
     <LinearLayout
-        android:id="@+id/layoutGave"
+        android:id="@+id/layoutMoneyShouldCome"
         android:orientation="vertical"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:paddingEnd="8dp"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="8dp"/>
 
-    <!-- Vertical Divider -->
+    <!-- Divider line -->
     <View
-        android:layout_width="1dp"
-        android:layout_height="match_parent"
-        android:background="#80000000"/>
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="#80000000"
+        android:layout_marginVertical="10dp"/>
 
-    <!-- Right: I Received Section -->
+    <!-- Bottom section: I have to Pay -->
     <LinearLayout
-        android:id="@+id/layoutReceived"
+        android:id="@+id/layoutIHaveToPay"
         android:orientation="vertical"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:paddingStart="8dp"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"/>
 </LinearLayout>
