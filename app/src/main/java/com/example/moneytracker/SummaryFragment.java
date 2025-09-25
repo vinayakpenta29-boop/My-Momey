@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import androidx.fragment.app.Fragment;
 import java.util.HashMap;
 import java.util.Set;
@@ -39,14 +38,14 @@ public class SummaryFragment extends Fragment {
         allNames.addAll(givenMap.keySet());
         allNames.addAll(receivedMap.keySet());
 
-        // Section title: Money should Come
+        // Money should Come section (left)
         TextView moneyShouldComeTitle = new TextView(getContext());
         moneyShouldComeTitle.setText("Money should Come");
         moneyShouldComeTitle.setTypeface(null, Typeface.BOLD);
         moneyShouldComeTitle.setTextSize(18);
         layoutMoneyShouldCome.addView(moneyShouldComeTitle);
 
-        // Section title: I have to Pay
+        // I have to Pay section (right)
         TextView iHaveToPayTitle = new TextView(getContext());
         iHaveToPayTitle.setText("I have to Pay");
         iHaveToPayTitle.setTypeface(null, Typeface.BOLD);
@@ -59,10 +58,11 @@ public class SummaryFragment extends Fragment {
             int balance = given - received;
 
             if (balance < 0) {
-                layoutMoneyShouldCome.addView(createAccountBox(name, -balance)); // Money should Come
+                layoutMoneyShouldCome.addView(createAccountBox(name, -balance)); // Show positive
             } else if (balance > 0) {
-                layoutIHaveToPay.addView(createAccountBox(name, balance)); // I have to Pay
+                layoutIHaveToPay.addView(createAccountBox(name, balance));
             }
+            // Zero balance not shown
         }
     }
 
