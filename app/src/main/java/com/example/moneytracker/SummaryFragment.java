@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+
 import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
@@ -32,11 +33,11 @@ public class SummaryFragment extends Fragment {
         layoutMoneyShouldCome.removeAllViews();
         layoutIHaveToPay.removeAllViews();
 
-        HashMap<String, Integer> givenMap = GivenFragment.givenMap;
+        HashMap<String, Integer> gaveMap = GivenFragment.givenMap;
         HashMap<String, Integer> receivedMap = ReceivedFragment.receivedMap;
 
         Set<String> allNames = new TreeSet<>();
-        allNames.addAll(givenMap.keySet());
+        allNames.addAll(gaveMap.keySet());
         allNames.addAll(receivedMap.keySet());
 
         // Section title: Money should Come
@@ -54,15 +55,16 @@ public class SummaryFragment extends Fragment {
         layoutIHaveToPay.addView(iHaveToPayTitle);
 
         for (String name : allNames) {
-            int given = givenMap.getOrDefault(name, 0);
+            int gave = gaveMap.getOrDefault(name, 0);
             int received = receivedMap.getOrDefault(name, 0);
-            int balance = given - received;
+            int balance = gave - received;
 
-            if (balance < 0) {
-                layoutMoneyShouldCome.addView(createAccountBox(name, balance)); // Money should Come
-            } else if (balance > 0) {
-                layoutIHaveToPay.addView(createAccountBox(name, -balance)); // I have to Pay
+            if (balance > 0) {
+                layoutMoneyShouldCome.addView(createAccountBox(name, balance));
+            } else if (balance < 0) {
+                layoutIHaveToPay.addView(createAccountBox(name, -balance));
             }
+            // balance==0: do not show
         }
     }
 
