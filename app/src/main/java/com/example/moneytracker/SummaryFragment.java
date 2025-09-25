@@ -15,22 +15,22 @@ import java.util.TreeSet;
 
 public class SummaryFragment extends Fragment {
 
-    private LinearLayout layoutGave, layoutReceived;
+    private LinearLayout layoutMoneyShouldCome, layoutIHaveToPay;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_summary, container, false);
-        layoutGave = v.findViewById(R.id.layoutGave);
-        layoutReceived = v.findViewById(R.id.layoutReceived);
+        layoutMoneyShouldCome = v.findViewById(R.id.layoutMoneyShouldCome);
+        layoutIHaveToPay = v.findViewById(R.id.layoutIHaveToPay);
         refreshView();
         return v;
     }
 
     public void refreshView() {
-        if (layoutGave == null || layoutReceived == null) return;
+        if (layoutMoneyShouldCome == null || layoutIHaveToPay == null) return;
 
-        layoutGave.removeAllViews();
-        layoutReceived.removeAllViews();
+        layoutMoneyShouldCome.removeAllViews();
+        layoutIHaveToPay.removeAllViews();
 
         HashMap<String, Integer> givenMap = GivenFragment.givenMap;
         HashMap<String, Integer> receivedMap = ReceivedFragment.receivedMap;
@@ -39,31 +39,30 @@ public class SummaryFragment extends Fragment {
         allNames.addAll(givenMap.keySet());
         allNames.addAll(receivedMap.keySet());
 
-        // "I Gave" section title
-        TextView gaveTitle = new TextView(getContext());
-        gaveTitle.setText("I Gave");
-        gaveTitle.setTypeface(null, Typeface.BOLD);
-        gaveTitle.setTextSize(18);
-        layoutGave.addView(gaveTitle);
+        // Section title: Money should Come
+        TextView moneyShouldComeTitle = new TextView(getContext());
+        moneyShouldComeTitle.setText("Money should Come");
+        moneyShouldComeTitle.setTypeface(null, Typeface.BOLD);
+        moneyShouldComeTitle.setTextSize(18);
+        layoutMoneyShouldCome.addView(moneyShouldComeTitle);
 
-        // "I Received" section title
-        TextView receivedTitle = new TextView(getContext());
-        receivedTitle.setText("I Received");
-        receivedTitle.setTypeface(null, Typeface.BOLD);
-        receivedTitle.setTextSize(18);
-        layoutReceived.addView(receivedTitle);
+        // Section title: I have to Pay
+        TextView iHaveToPayTitle = new TextView(getContext());
+        iHaveToPayTitle.setText("I have to Pay");
+        iHaveToPayTitle.setTypeface(null, Typeface.BOLD);
+        iHaveToPayTitle.setTextSize(18);
+        layoutIHaveToPay.addView(iHaveToPayTitle);
 
         for (String name : allNames) {
             int given = givenMap.getOrDefault(name, 0);
             int received = receivedMap.getOrDefault(name, 0);
             int balance = given - received;
 
-            if (balance > 0) {
-                layoutGave.addView(createAccountBox(name, balance)); // Positive: I Gave
-            } else if (balance < 0) {
-                layoutReceived.addView(createAccountBox(name, -balance)); // Negative: I Received (show positive)
+            if (balance < 0) {
+                layoutMoneyShouldCome.addView(createAccountBox(name, -balance)); // Money should Come
+            } else if (balance > 0) {
+                layoutIHaveToPay.addView(createAccountBox(name, balance)); // I have to Pay
             }
-            // If balance == 0, do not display
         }
     }
 
