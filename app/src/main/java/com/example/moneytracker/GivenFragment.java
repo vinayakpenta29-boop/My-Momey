@@ -10,7 +10,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,7 +20,7 @@ public class GivenFragment extends Fragment {
     private EditText nameInput, amountInput, noteInput;
     private Button addButton;
 
-    public static class Entry {
+    public static class Entry implements EntryBase {
         public int amount;
         public String note;
         public String date;
@@ -31,6 +30,9 @@ public class GivenFragment extends Fragment {
             this.note = note;
             this.date = date;
         }
+        @Override public int getAmount() { return amount; }
+        @Override public String getNote() { return note; }
+        @Override public String getDate() { return date; }
     }
 
     public static HashMap<String, ArrayList<Entry>> givenMap = new HashMap<>();
