@@ -9,7 +9,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
-
 import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
@@ -33,8 +32,9 @@ public class SummaryFragment extends Fragment {
         layoutMoneyShouldCome.removeAllViews();
         layoutIHaveToPay.removeAllViews();
 
-        HashMap<String, Integer> gaveMap = GivenFragment.givenMap;
-        HashMap<String, Integer> receivedMap = ReceivedFragment.receivedMap;
+        // Use the Entry type for notes and amounts
+        HashMap<String, GivenFragment.Entry> gaveMap = GivenFragment.givenMap;
+        HashMap<String, ReceivedFragment.Entry> receivedMap = ReceivedFragment.receivedMap;
 
         Set<String> allNames = new TreeSet<>();
         allNames.addAll(gaveMap.keySet());
@@ -55,22 +55,28 @@ public class SummaryFragment extends Fragment {
         layoutIHaveToPay.addView(iHaveToPayTitle);
 
         for (String name : allNames) {
-            int gave = gaveMap.getOrDefault(name, 0);
-            int received = receivedMap.getOrDefault(name, 0);
+            int gave = gaveMap.containsKey(name) ? gaveMap.get(name).amount : 0;
+            int received = receivedMap.containsKey(name) ? receivedMap.get(name).amount : 0;
+            String noteGave = gaveMap.containsKey(name) ? gaveMap.get(name).note : "";
+            String noteReceived = receivedMap.containsKey(name) ? receivedMap.get(name).note : "";
             int balance = gave - received;
 
             if (balance > 0) {
-                layoutMoneyShouldCome.addView(createAccountBox(name, balance));
+                layoutMoneyShouldCome.addView(createAccountBox(name, balance, noteGave));
             } else if (balance < 0) {
-                layoutIHaveToPay.addView(createAccountBox(name, -balance));
+                layoutIHaveToPay.addView(createAccountBox(name, -balance, noteReceived));
             }
             // balance==0: do not show
         }
     }
 
-    private TextView createAccountBox(String name, int amount) {
+    private TextView createAccountBox(String name, int amount, String note) {
         TextView box = new TextView(getContext());
-        box.setText(name + ": ₹" + amount);
+        String text = name + ": ₹" + amount;
+        if (note != null && !note.isEmpty()) {
+            text += " (" + note + ")";
+        }
+        box.setText(text);
         box.setPadding(20, 20, 20, 20);
         box.setTextSize(16);
         box.setBackgroundResource(android.R.drawable.dialog_holo_light_frame);
