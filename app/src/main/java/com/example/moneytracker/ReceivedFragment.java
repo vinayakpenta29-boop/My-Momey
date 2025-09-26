@@ -11,6 +11,9 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 public class ReceivedFragment extends Fragment {
@@ -18,18 +21,19 @@ public class ReceivedFragment extends Fragment {
     private EditText nameInput, amountInput, noteInput;
     private Button addButton;
 
-    // Map now holds Entry objects
     public static class Entry {
         public int amount;
         public String note;
+        public String date;
 
-        public Entry(int amount, String note) {
+        public Entry(int amount, String note, String date) {
             this.amount = amount;
             this.note = note;
+            this.date = date;
         }
     }
 
-    public static HashMap<String, Entry> receivedMap = new HashMap<>();
+    public static HashMap<String, ArrayList<Entry>> receivedMap = new HashMap<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -46,10 +50,12 @@ public class ReceivedFragment extends Fragment {
             if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(amountStr)) {
                 try {
                     int amount = Integer.parseInt(amountStr);
-                    if (receivedMap.containsKey(name)) {
-                        amount += receivedMap.get(name).amount;
+                    String dateStr = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
+                    Entry entry = new Entry(amount, noteStr, dateStr);
+                    if (!receivedMap.containsKey(name)) {
+                        receivedMap.put(name, new ArrayList<>());
                     }
-                    receivedMap.put(name, new Entry(amount, noteStr));
+                    receivedMap.get(name).add(entry);
                     Toast.makeText(getContext(), "Added " + name + ": ₹" + amount, Toast.LENGTH_SHORT).show();
                     nameInput.setText("");
                     amountInput.setText("");
@@ -69,8 +75,8 @@ public class ReceivedFragment extends Fragment {
     private void notifySummaryUpdate() {
         if (getActivity() != null) {
             SummaryFragment fragment = (SummaryFragment) getActivity()
-                .getSupportFragmentManager()
-                .findFragmentByTag("f2");
+                    .getSupportFragmentManager()
+                    .findFragmentByTag("f2");
             if (fragment != null) {
                 fragment.refreshView();
             }
