@@ -1,7 +1,9 @@
 package com.example.moneytracker;
 
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.ArrayList;
 
 public class SummaryFragment extends Fragment {
 
@@ -32,22 +35,20 @@ public class SummaryFragment extends Fragment {
         layoutMoneyShouldCome.removeAllViews();
         layoutIHaveToPay.removeAllViews();
 
-        // Use the Entry type for notes and amounts
-        HashMap<String, GivenFragment.Entry> gaveMap = GivenFragment.givenMap;
-        HashMap<String, ReceivedFragment.Entry> receivedMap = ReceivedFragment.receivedMap;
+        HashMap<String, ArrayList<GivenFragment.Entry>> gaveMap = GivenFragment.givenMap;
+        HashMap<String, ArrayList<ReceivedFragment.Entry>> receivedMap = ReceivedFragment.receivedMap;
 
         Set<String> allNames = new TreeSet<>();
         allNames.addAll(gaveMap.keySet());
         allNames.addAll(receivedMap.keySet());
 
-        // Section title: Money should Come
+        // Section titles
         TextView moneyShouldComeTitle = new TextView(getContext());
         moneyShouldComeTitle.setText("Money should Come");
         moneyShouldComeTitle.setTypeface(null, Typeface.BOLD);
         moneyShouldComeTitle.setTextSize(18);
         layoutMoneyShouldCome.addView(moneyShouldComeTitle);
 
-        // Section title: I have to Pay
         TextView iHaveToPayTitle = new TextView(getContext());
         iHaveToPayTitle.setText("I have to Pay");
         iHaveToPayTitle.setTypeface(null, Typeface.BOLD);
@@ -55,37 +56,104 @@ public class SummaryFragment extends Fragment {
         layoutIHaveToPay.addView(iHaveToPayTitle);
 
         for (String name : allNames) {
-            int gave = gaveMap.containsKey(name) ? gaveMap.get(name).amount : 0;
-            int received = receivedMap.containsKey(name) ? receivedMap.get(name).amount : 0;
-            String noteGave = gaveMap.containsKey(name) ? gaveMap.get(name).note : "";
-            String noteReceived = receivedMap.containsKey(name) ? receivedMap.get(name).note : "";
-            int balance = gave - received;
+            ArrayList<GivenFragment.Entry> givenList = gaveMap.containsKey(name) ? gaveMap.get(name) : new ArrayList<>();
+            ArrayList<ReceivedFragment.Entry> receivedList = receivedMap.containsKey(name) ? receivedMap.get(name) : new ArrayList<>();
+
+            int totalGiven = 0, totalPaid = 0;
+            for (GivenFragment.Entry e : givenList) totalGiven += e.amount;
+            for (ReceivedFragment.Entry e : receivedList) totalPaid += e.amount;
+            int balance = totalGiven - totalPaid;
 
             if (balance > 0) {
-                layoutMoneyShouldCome.addView(createAccountBox(name, balance, noteGave));
+                layoutMoneyShouldCome.addView(createAccountBox(name, totalGiven, totalPaid, balance, givenList, receivedList, false));
             } else if (balance < 0) {
-                layoutIHaveToPay.addView(createAccountBox(name, -balance, noteReceived));
+                layoutIHaveToPay.addView(createAccountBox(name, totalPaid, totalGiven, -balance, receivedList, givenList, true));
             }
-            // balance==0: do not show
+            // Else balance==0
         }
     }
 
-    private TextView createAccountBox(String name, int amount, String note) {
-        TextView box = new TextView(getContext());
-        String text = name + ": ₹" + amount;
-        if (note != null && !note.isEmpty()) {
-            text += " (" + note + ")";
-        }
-        box.setText(text);
-        box.setPadding(20, 20, 20, 20);
-        box.setTextSize(16);
-        box.setBackgroundResource(android.R.drawable.dialog_holo_light_frame);
+    private LinearLayout createAccountBox(String name, int totalTaken, int totalPaid, int balance,
+                                          ArrayList<? extends GivenFragment.Entry> takenList,
+                                          ArrayList<? extends GivenFragment.Entry> paidList,
+                                          boolean iHaveToPaySection) {
+        LinearLayout box = new LinearLayout(getContext());
+        box.setOrientation(LinearLayout.VERTICAL);
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setCornerRadius(32);
+        drawable.setColor(0xFFF8FFF3);
+        drawable.setStroke(3, 0xFFBFBFBF);
+        box.setBackground(drawable);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT);
-        params.setMargins(0, 10, 0, 10);
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.setMargins(0, 24, 0, 24);
         box.setLayoutParams(params);
+
+        // Heading
+        TextView heading = new TextView(getContext());
+        heading.setText((iHaveToPaySection ? "You Taken from " : "") + name + " " + totalTaken);
+        heading.setTypeface(null, Typeface.BOLD);
+        heading.setTextColor(0xFFEA4444);
+        heading.setTextSize(20);
+        heading.setBackgroundColor(0xFFA0FFA0);
+        heading.setPadding(20, 16, 20, 16);
+        box.addView(heading);
+
+        // Entries Table
+        for (GivenFragment.Entry entry : takenList) {
+            LinearLayout row = new LinearLayout(getContext());
+            row.setOrientation(LinearLayout.HORIZONTAL);
+
+            TextView entryLeft = new TextView(getContext());
+            String leftText = entry.amount + (!TextUtils.isEmpty(entry.note) ? " (" + entry.note + ")" : "");
+            entryLeft.setText(leftText);
+            entryLeft.setTextSize(16);
+            entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            row.addView(entryLeft);
+
+            TextView entryRight = new TextView(getContext());
+            entryRight.setText(entry.date);
+            entryRight.setTextSize(16);
+            entryRight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            entryRight.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+            row.addView(entryRight);
+
+            row.setPadding(20, 10, 20, 10);
+            box.addView(row);
+        }
+
+        // Draw divider if entries exist
+        if (!takenList.isEmpty()) {
+            addDivider(box);
+        }
+
+        // Paid entries (could also show each one individually, but here use total)
+        TextView paidRow = new TextView(getContext());
+        paidRow.setText((iHaveToPaySection ? "You Paid to " + name + " Paid" : name + " Paid") + "  " + totalPaid);
+        paidRow.setTypeface(null, Typeface.BOLD);
+        paidRow.setTextSize(16);
+        paidRow.setPadding(20, 10, 20, 10);
+        box.addView(paidRow);
+
+        // Balance row
+        TextView balanceView = new TextView(getContext());
+        balanceView.setText("Balance   " + balance);
+        balanceView.setTypeface(null, Typeface.BOLD);
+        balanceView.setTextColor(0xFFEA4444);
+        balanceView.setTextSize(18);
+        balanceView.setPadding(20, 10, 20, 10);
+        box.addView(balanceView);
+
         return box;
+    }
+
+    private void addDivider(LinearLayout layout) {
+        View line = new View(getContext());
+        LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 2);
+        line.setLayoutParams(lineParams);
+        line.setBackgroundColor(0xFFD1D1D1);
+        layout.addView(line);
     }
 
     @Override
