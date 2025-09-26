@@ -15,31 +15,45 @@ import java.util.HashMap;
 
 public class GivenFragment extends Fragment {
 
-    private EditText nameInput, amountInput;
+    private EditText nameInput, amountInput, noteInput;
     private Button addButton;
 
-    public static HashMap<String, Integer> givenMap = new HashMap<>();
+    // Map now holds Entry objects
+    public static class Entry {
+        public int amount;
+        public String note;
+
+        public Entry(int amount, String note) {
+            this.amount = amount;
+            this.note = note;
+        }
+    }
+
+    public static HashMap<String, Entry> givenMap = new HashMap<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_given, container, false);
         nameInput = v.findViewById(R.id.editTextName);
         amountInput = v.findViewById(R.id.editTextAmount);
+        noteInput = v.findViewById(R.id.editTextNote);
         addButton = v.findViewById(R.id.buttonAdd);
 
         addButton.setOnClickListener(view -> {
             String name = nameInput.getText().toString().trim();
             String amountStr = amountInput.getText().toString().trim();
+            String noteStr = noteInput.getText().toString().trim();
             if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(amountStr)) {
                 try {
                     int amount = Integer.parseInt(amountStr);
                     if (givenMap.containsKey(name)) {
-                        amount += givenMap.get(name);
+                        amount += givenMap.get(name).amount;
                     }
-                    givenMap.put(name, amount);
+                    givenMap.put(name, new Entry(amount, noteStr));
                     Toast.makeText(getContext(), "Added " + name + ": ₹" + amount, Toast.LENGTH_SHORT).show();
                     nameInput.setText("");
                     amountInput.setText("");
+                    noteInput.setText("");
                     notifySummaryUpdate();
                 } catch (NumberFormatException e) {
                     Toast.makeText(getContext(), "Invalid amount", Toast.LENGTH_SHORT).show();
@@ -56,7 +70,7 @@ public class GivenFragment extends Fragment {
         if (getActivity() != null) {
             SummaryFragment fragment = (SummaryFragment) getActivity()
                 .getSupportFragmentManager()
-                .findFragmentByTag("f2"); // third tab index = 2 => "f2"
+                .findFragmentByTag("f2");
             if (fragment != null) {
                 fragment.refreshView();
             }
