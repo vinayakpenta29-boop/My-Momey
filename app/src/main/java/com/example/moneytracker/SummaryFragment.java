@@ -11,10 +11,18 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.ArrayList;
+
+// --------- EntryBase interface ----------
+public interface EntryBase {
+    int getAmount();
+    String getNote();
+    String getDate();
+}
+// ----------------------------------------
 
 public class SummaryFragment extends Fragment {
 
@@ -59,23 +67,25 @@ public class SummaryFragment extends Fragment {
             ArrayList<GivenFragment.Entry> givenList = gaveMap.containsKey(name) ? gaveMap.get(name) : new ArrayList<>();
             ArrayList<ReceivedFragment.Entry> receivedList = receivedMap.containsKey(name) ? receivedMap.get(name) : new ArrayList<>();
 
+            ArrayList<EntryBase> givenBase = new ArrayList<>(givenList);
+            ArrayList<EntryBase> receivedBase = new ArrayList<>(receivedList);
+
             int totalGiven = 0, totalPaid = 0;
-            for (GivenFragment.Entry e : givenList) totalGiven += e.amount;
-            for (ReceivedFragment.Entry e : receivedList) totalPaid += e.amount;
+            for (EntryBase e : givenBase) totalGiven += e.getAmount();
+            for (EntryBase e : receivedBase) totalPaid += e.getAmount();
             int balance = totalGiven - totalPaid;
 
             if (balance > 0) {
-                layoutMoneyShouldCome.addView(createAccountBox(name, totalGiven, totalPaid, balance, givenList, receivedList, false));
+                layoutMoneyShouldCome.addView(createAccountBox(name, totalGiven, totalPaid, balance, givenBase, receivedBase, false));
             } else if (balance < 0) {
-                layoutIHaveToPay.addView(createAccountBox(name, totalPaid, totalGiven, -balance, receivedList, givenList, true));
+                layoutIHaveToPay.addView(createAccountBox(name, totalPaid, totalGiven, -balance, receivedBase, givenBase, true));
             }
-            // Else balance==0
         }
     }
 
     private LinearLayout createAccountBox(String name, int totalTaken, int totalPaid, int balance,
-                                          ArrayList<? extends GivenFragment.Entry> takenList,
-                                          ArrayList<? extends GivenFragment.Entry> paidList,
+                                          ArrayList<EntryBase> takenList,
+                                          ArrayList<EntryBase> paidList,
                                           boolean iHaveToPaySection) {
         LinearLayout box = new LinearLayout(getContext());
         box.setOrientation(LinearLayout.VERTICAL);
@@ -100,19 +110,19 @@ public class SummaryFragment extends Fragment {
         box.addView(heading);
 
         // Entries Table
-        for (GivenFragment.Entry entry : takenList) {
+        for (EntryBase entry : takenList) {
             LinearLayout row = new LinearLayout(getContext());
             row.setOrientation(LinearLayout.HORIZONTAL);
 
             TextView entryLeft = new TextView(getContext());
-            String leftText = entry.amount + (!TextUtils.isEmpty(entry.note) ? " (" + entry.note + ")" : "");
+            String leftText = entry.getAmount() + (!TextUtils.isEmpty(entry.getNote()) ? " (" + entry.getNote() + ")" : "");
             entryLeft.setText(leftText);
             entryLeft.setTextSize(16);
             entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
             row.addView(entryLeft);
 
             TextView entryRight = new TextView(getContext());
-            entryRight.setText(entry.date);
+            entryRight.setText(entry.getDate());
             entryRight.setTextSize(16);
             entryRight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
             entryRight.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
@@ -122,12 +132,11 @@ public class SummaryFragment extends Fragment {
             box.addView(row);
         }
 
-        // Draw divider if entries exist
         if (!takenList.isEmpty()) {
             addDivider(box);
         }
 
-        // Paid entries (could also show each one individually, but here use total)
+        // Paid entries (show as total)
         TextView paidRow = new TextView(getContext());
         paidRow.setText((iHaveToPaySection ? "You Paid to " + name + " Paid" : name + " Paid") + "  " + totalPaid);
         paidRow.setTypeface(null, Typeface.BOLD);
