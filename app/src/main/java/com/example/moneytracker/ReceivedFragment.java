@@ -15,31 +15,45 @@ import java.util.HashMap;
 
 public class ReceivedFragment extends Fragment {
 
-    private EditText nameInput, amountInput;
+    private EditText nameInput, amountInput, noteInput;
     private Button addButton;
 
-    public static HashMap<String, Integer> receivedMap = new HashMap<>();
+    // Map now holds Entry objects
+    public static class Entry {
+        public int amount;
+        public String note;
+
+        public Entry(int amount, String note) {
+            this.amount = amount;
+            this.note = note;
+        }
+    }
+
+    public static HashMap<String, Entry> receivedMap = new HashMap<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_received, container, false);
         nameInput = v.findViewById(R.id.editTextName);
         amountInput = v.findViewById(R.id.editTextAmount);
+        noteInput = v.findViewById(R.id.editTextNote);
         addButton = v.findViewById(R.id.buttonAdd);
 
         addButton.setOnClickListener(view -> {
             String name = nameInput.getText().toString().trim();
             String amountStr = amountInput.getText().toString().trim();
+            String noteStr = noteInput.getText().toString().trim();
             if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(amountStr)) {
                 try {
                     int amount = Integer.parseInt(amountStr);
                     if (receivedMap.containsKey(name)) {
-                        amount += receivedMap.get(name);
+                        amount += receivedMap.get(name).amount;
                     }
-                    receivedMap.put(name, amount);
+                    receivedMap.put(name, new Entry(amount, noteStr));
                     Toast.makeText(getContext(), "Added " + name + ": ₹" + amount, Toast.LENGTH_SHORT).show();
                     nameInput.setText("");
                     amountInput.setText("");
+                    noteInput.setText("");
                     notifySummaryUpdate();
                 } catch (NumberFormatException e) {
                     Toast.makeText(getContext(), "Invalid amount", Toast.LENGTH_SHORT).show();
