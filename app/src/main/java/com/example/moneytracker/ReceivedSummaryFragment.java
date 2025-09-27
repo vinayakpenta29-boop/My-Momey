@@ -8,6 +8,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import java.util.ArrayList;
 
 public class ReceivedSummaryFragment extends Fragment {
     private LinearLayout layout;
@@ -24,7 +25,13 @@ public class ReceivedSummaryFragment extends Fragment {
         if (layout == null) return;
         layout.removeAllViews();
         for (String name : ReceivedFragment.receivedMap.keySet()) {
-            int amount = ReceivedFragment.receivedMap.get(name);
+            ArrayList<ReceivedFragment.Entry> entries = ReceivedFragment.receivedMap.get(name);
+            int amount = 0;
+            if (entries != null) {
+                for (ReceivedFragment.Entry e : entries) {
+                    amount += e.getAmount();
+                }
+            }
             TextView tv = new TextView(getContext());
             tv.setText(name + ": ₹" + amount);
             layout.addView(tv);
