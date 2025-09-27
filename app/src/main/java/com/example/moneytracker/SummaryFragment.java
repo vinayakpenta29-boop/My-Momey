@@ -16,14 +16,6 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
 
-// --------- EntryBase interface ----------
-public interface EntryBase {
-    int getAmount();
-    String getNote();
-    String getDate();
-}
-// ----------------------------------------
-
 public class SummaryFragment extends Fragment {
 
     private LinearLayout layoutMoneyShouldCome, layoutIHaveToPay;
@@ -64,8 +56,8 @@ public class SummaryFragment extends Fragment {
         layoutIHaveToPay.addView(iHaveToPayTitle);
 
         for (String name : allNames) {
-            ArrayList<GivenFragment.Entry> givenList = gaveMap.containsKey(name) ? gaveMap.get(name) : new ArrayList<>();
-            ArrayList<ReceivedFragment.Entry> receivedList = receivedMap.containsKey(name) ? receivedMap.get(name) : new ArrayList<>();
+            ArrayList<GivenFragment.Entry> givenList = gaveMap.getOrDefault(name, new ArrayList<>());
+            ArrayList<ReceivedFragment.Entry> receivedList = receivedMap.getOrDefault(name, new ArrayList<>());
 
             ArrayList<EntryBase> givenBase = new ArrayList<>(givenList);
             ArrayList<EntryBase> receivedBase = new ArrayList<>(receivedList);
