@@ -4,6 +4,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +12,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -42,7 +47,6 @@ public class SummaryFragment extends Fragment {
         allNames.addAll(gaveMap.keySet());
         allNames.addAll(receivedMap.keySet());
 
-        // Section titles
         TextView moneyShouldComeTitle = new TextView(getContext());
         moneyShouldComeTitle.setText("Money should Come");
         moneyShouldComeTitle.setTypeface(null, Typeface.BOLD);
@@ -68,53 +72,90 @@ public class SummaryFragment extends Fragment {
             int balance = totalGiven - totalPaid;
 
             if (balance > 0) {
-                layoutMoneyShouldCome.addView(createAccountBox(name, totalGiven, totalPaid, balance, givenBase, receivedBase, false));
+                // "Money Should Come" section (You gave money to others, so you should get it back)
+                layoutMoneyShouldCome.addView(
+                    createAccountBox(
+                        name, totalGiven, totalPaid, balance, givenBase, receivedBase, false, true
+                    )
+                );
             } else if (balance < 0) {
-                layoutIHaveToPay.addView(createAccountBox(name, totalPaid, totalGiven, -balance, receivedBase, givenBase, true));
+                // "I Have to Pay" section (You taken money from others, so you owe them)
+                layoutIHaveToPay.addView(
+                    createAccountBox(
+                        name, totalPaid, totalGiven, -balance, receivedBase, givenBase, true, false
+                    )
+                );
             }
         }
     }
 
-    private LinearLayout createAccountBox(String name, int totalTaken, int totalPaid, int balance,
-                                          ArrayList<EntryBase> takenList,
-                                          ArrayList<EntryBase> paidList,
-                                          boolean iHaveToPaySection) {
+    // The "showGivenHeader" param is true only for "Money Should Come" section.
+    private LinearLayout createAccountBox(
+            String name, int totalTaken, int totalPaid, int balance,
+            ArrayList<EntryBase> takenList,
+            ArrayList<EntryBase> paidList,
+            boolean iHaveToPaySection,
+            boolean showGivenHeader) {
+
         LinearLayout box = new LinearLayout(getContext());
         box.setOrientation(LinearLayout.VERTICAL);
+
+        // Curved upside as header: use more radius for top
         GradientDrawable drawable = new GradientDrawable();
-        drawable.setCornerRadius(32);
+        drawable.setCornerRadii(new float[]{
+            32,32, // Top-left, top-right
+            32,32, // Top-right, top-right again (for symmetry)
+            12,12, // Bottom-right, bottom-left = less curve
+            12,12
+        });
         drawable.setColor(0xFFF8FFF3);
         drawable.setStroke(3, 0xFFBFBFBF);
         box.setBackground(drawable);
+
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.setMargins(0, 24, 0, 24);
         box.setLayoutParams(params);
 
-        // Heading
+        // Heading text logic
         TextView heading = new TextView(getContext());
-        heading.setText((iHaveToPaySection ? "You Taken from " : "") + name + " " + totalTaken);
+        String headingText;
+        if (showGivenHeader) {
+            headingText = "You Gived Money to " + name + " ₹" + totalTaken;
+        } else if (iHaveToPaySection) {
+            headingText = "You Taken from " + name + " ₹" + totalTaken;
+        } else {
+            headingText = name + " ₹" + totalTaken;
+        }
+        heading.setText(headingText);
         heading.setTypeface(null, Typeface.BOLD);
         heading.setTextColor(0xFFEA4444);
         heading.setTextSize(20);
         heading.setBackgroundColor(0xFFA0FFA0);
         heading.setPadding(20, 16, 20, 16);
+
+        // Center the text in the box
+        heading.setGravity(Gravity.CENTER);
+
         box.addView(heading);
 
         // Entries Table
-        for (EntryBase entry : takenList) {
+        for (int i = 0; i < takenList.size(); i++) {
+            EntryBase entry = takenList.get(i);
             LinearLayout row = new LinearLayout(getContext());
             row.setOrientation(LinearLayout.HORIZONTAL);
 
             TextView entryLeft = new TextView(getContext());
-            String leftText = entry.getAmount() + (!TextUtils.isEmpty(entry.getNote()) ? " (" + entry.getNote() + ")" : "");
-            entryLeft.setText(leftText);
+            // Remove brackets, just note after amount
+            String leftText = entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
+            entryLeft.setText(leftText.trim());
             entryLeft.setTextSize(16);
             entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+
             row.addView(entryLeft);
 
             TextView entryRight = new TextView(getContext());
-            entryRight.setText(entry.getDate());
+            entryRight.setText(formatDate(entry.getDate()));
             entryRight.setTextSize(16);
             entryRight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
             entryRight.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
@@ -122,39 +163,67 @@ public class SummaryFragment extends Fragment {
 
             row.setPadding(20, 10, 20, 10);
             box.addView(row);
+
+            // Divider after each entry except last
+            if (i != takenList.size() - 1) {
+                addDivider(box, 1);
+            }
         }
 
-        if (!takenList.isEmpty()) {
-            addDivider(box);
-        }
-
-        // Paid entries (show as total)
+        // Paid row (heading)
         TextView paidRow = new TextView(getContext());
-        paidRow.setText((iHaveToPaySection ? "You Paid to " + name + " Paid" : name + " Paid") + "  " + totalPaid);
+        String paidRowText;
+        if (iHaveToPaySection) {
+            paidRowText = "You Paid to " + name + " Paid ₹" + totalPaid;
+        } else {
+            paidRowText = name + " Paid ₹" + totalPaid;
+        }
+        paidRow.setText(paidRowText);
         paidRow.setTypeface(null, Typeface.BOLD);
         paidRow.setTextSize(16);
         paidRow.setPadding(20, 10, 20, 10);
+        paidRow.setGravity(Gravity.CENTER_VERTICAL);
         box.addView(paidRow);
 
         // Balance row
         TextView balanceView = new TextView(getContext());
-        balanceView.setText("Balance   " + balance);
+        balanceView.setText("Balance ₹" + balance);
         balanceView.setTypeface(null, Typeface.BOLD);
         balanceView.setTextColor(0xFFEA4444);
         balanceView.setTextSize(18);
         balanceView.setPadding(20, 10, 20, 10);
+        balanceView.setGravity(Gravity.CENTER_VERTICAL);
         box.addView(balanceView);
 
         return box;
     }
 
-    private void addDivider(LinearLayout layout) {
+    private void addDivider(LinearLayout layout, int thicknessDp) {
         View line = new View(getContext());
         LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 2);
+                LinearLayout.LayoutParams.MATCH_PARENT, thicknessDp * 2);
         line.setLayoutParams(lineParams);
         line.setBackgroundColor(0xFFD1D1D1);
         layout.addView(line);
+    }
+
+    private String formatDate(String inputDate) {
+        // Try to parse yyyy-MM-dd or dd/MM/yyyy and output as dd-MM-yyyy
+        try {
+            Date date = null;
+            if (inputDate.contains("/")) {
+                // already dd/MM/yyyy
+                date = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(inputDate);
+            } else if (inputDate.contains("-") && inputDate.length() >= 10) {
+                date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(inputDate.substring(0, 10));
+            }
+            if (date != null) {
+                return new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(date);
+            }
+        } catch (ParseException e) {
+            // fallback, show original
+        }
+        return inputDate;
     }
 
     @Override
