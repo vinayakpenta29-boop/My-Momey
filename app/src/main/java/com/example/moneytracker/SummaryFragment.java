@@ -62,7 +62,6 @@ public class SummaryFragment extends Fragment {
         for (String name : allNames) {
             ArrayList<GivenFragment.Entry> givenList = gaveMap.getOrDefault(name, new ArrayList<>());
             ArrayList<ReceivedFragment.Entry> receivedList = receivedMap.getOrDefault(name, new ArrayList<>());
-
             ArrayList<EntryBase> givenBase = new ArrayList<>(givenList);
             ArrayList<EntryBase> receivedBase = new ArrayList<>(receivedList);
 
@@ -71,25 +70,24 @@ public class SummaryFragment extends Fragment {
             for (EntryBase e : receivedBase) totalPaid += e.getAmount();
             int balance = totalGiven - totalPaid;
 
-            if (balance > 0) {
-                // "Money Should Come" section (You gave money to others, so you should get it back)
-                layoutMoneyShouldCome.addView(
-                    createAccountBox(
-                        name, totalGiven, totalPaid, balance, givenBase, receivedBase, false, true
-                    )
-                );
-            } else if (balance < 0) {
-                // "I Have to Pay" section (You taken money from others, so you owe them)
-                layoutIHaveToPay.addView(
-                    createAccountBox(
-                        name, totalPaid, totalGiven, -balance, receivedBase, givenBase, true, false
-                    )
-                );
+            boolean hasEntries = !givenBase.isEmpty() || !receivedBase.isEmpty();
+            if (hasEntries) {
+                if (balance > 0) {
+                    layoutMoneyShouldCome.addView(createAccountBox(
+                            name, totalGiven, totalPaid, balance, givenBase, receivedBase, false, true));
+                } else if (balance < 0) {
+                    layoutIHaveToPay.addView(createAccountBox(
+                            name, totalPaid, totalGiven, -balance, receivedBase, givenBase, true, false));
+                } else {
+                    // Show box for zero balance too
+                    layoutMoneyShouldCome.addView(createAccountBox(
+                            name, totalGiven, totalPaid, balance, givenBase, receivedBase, false, true));
+                }
             }
         }
     }
 
-    // The "showGivenHeader" param is true only for "Money Should Come" section.
+    // showGivenHeader is true only for "Money Should Come" section
     private LinearLayout createAccountBox(
             String name, int totalTaken, int totalPaid, int balance,
             ArrayList<EntryBase> takenList,
@@ -100,13 +98,9 @@ public class SummaryFragment extends Fragment {
         LinearLayout box = new LinearLayout(getContext());
         box.setOrientation(LinearLayout.VERTICAL);
 
-        // Curved upside as header: use more radius for top
         GradientDrawable drawable = new GradientDrawable();
         drawable.setCornerRadii(new float[]{
-            32,32, // Top-left, top-right
-            32,32, // Top-right, top-right again (for symmetry)
-            12,12, // Bottom-right, bottom-left = less curve
-            12,12
+                32,32,32,32,12,12,12,12 // Top more curved
         });
         drawable.setColor(0xFFF8FFF3);
         drawable.setStroke(3, 0xFFBFBFBF);
@@ -117,7 +111,7 @@ public class SummaryFragment extends Fragment {
         params.setMargins(0, 24, 0, 24);
         box.setLayoutParams(params);
 
-        // Heading text logic
+        // Heading
         TextView heading = new TextView(getContext());
         String headingText;
         if (showGivenHeader) {
@@ -133,10 +127,7 @@ public class SummaryFragment extends Fragment {
         heading.setTextSize(20);
         heading.setBackgroundColor(0xFFA0FFA0);
         heading.setPadding(20, 16, 20, 16);
-
-        // Center the text in the box
         heading.setGravity(Gravity.CENTER);
-
         box.addView(heading);
 
         // Entries Table
@@ -146,12 +137,10 @@ public class SummaryFragment extends Fragment {
             row.setOrientation(LinearLayout.HORIZONTAL);
 
             TextView entryLeft = new TextView(getContext());
-            // Remove brackets, just note after amount
             String leftText = entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
             entryLeft.setText(leftText.trim());
             entryLeft.setTextSize(16);
             entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-
             row.addView(entryLeft);
 
             TextView entryRight = new TextView(getContext());
@@ -164,13 +153,12 @@ public class SummaryFragment extends Fragment {
             row.setPadding(20, 10, 20, 10);
             box.addView(row);
 
-            // Divider after each entry except last
             if (i != takenList.size() - 1) {
                 addDivider(box, 1);
             }
         }
 
-        // Paid row (heading)
+        // Paid row
         TextView paidRow = new TextView(getContext());
         String paidRowText;
         if (iHaveToPaySection) {
@@ -208,11 +196,10 @@ public class SummaryFragment extends Fragment {
     }
 
     private String formatDate(String inputDate) {
-        // Try to parse yyyy-MM-dd or dd/MM/yyyy and output as dd-MM-yyyy
+        // Parse yyyy-MM-dd or dd/MM/yyyy to dd-MM-yyyy
         try {
             Date date = null;
             if (inputDate.contains("/")) {
-                // already dd/MM/yyyy
                 date = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(inputDate);
             } else if (inputDate.contains("-") && inputDate.length() >= 10) {
                 date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(inputDate.substring(0, 10));
@@ -220,9 +207,7 @@ public class SummaryFragment extends Fragment {
             if (date != null) {
                 return new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(date);
             }
-        } catch (ParseException e) {
-            // fallback, show original
-        }
+        } catch (ParseException e) { }
         return inputDate;
     }
 
