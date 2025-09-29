@@ -62,36 +62,35 @@ public class SummaryFragment extends Fragment {
         for (String name : allNames) {
             ArrayList<GivenFragment.Entry> givenList = gaveMap.getOrDefault(name, new ArrayList<>());
             ArrayList<ReceivedFragment.Entry> receivedList = receivedMap.getOrDefault(name, new ArrayList<>());
-            ArrayList<EntryBase> givenBase = new ArrayList<>(givenList);
-            ArrayList<EntryBase> receivedBase = new ArrayList<>(receivedList);
 
             int totalGiven = 0, totalPaid = 0;
-            for (EntryBase e : givenBase) totalGiven += e.getAmount();
-            for (EntryBase e : receivedBase) totalPaid += e.getAmount();
+            for (EntryBase e : givenList) totalGiven += e.getAmount();
+            for (EntryBase e : receivedList) totalPaid += e.getAmount();
             int balance = totalGiven - totalPaid;
 
-            boolean hasEntries = !givenBase.isEmpty() || !receivedBase.isEmpty();
+            boolean hasEntries = !givenList.isEmpty() || !receivedList.isEmpty();
             if (hasEntries) {
-                if (balance > 0) {
-                    layoutMoneyShouldCome.addView(createAccountBox(
-                            name, totalGiven, totalPaid, balance, givenBase, receivedBase, false, true));
-                } else if (balance < 0) {
-                    layoutIHaveToPay.addView(createAccountBox(
-                            name, totalPaid, totalGiven, -balance, receivedBase, givenBase, true, false));
+                if (balance >= 0) {
+                    layoutMoneyShouldCome.addView(
+                        createAccountBox(
+                            name, totalGiven, totalPaid, balance, givenList, receivedList, false, true
+                        )
+                    );
                 } else {
-                    // Show box for zero balance too
-                    layoutMoneyShouldCome.addView(createAccountBox(
-                            name, totalGiven, totalPaid, balance, givenBase, receivedBase, false, true));
+                    layoutIHaveToPay.addView(
+                        createAccountBox(
+                            name, totalPaid, totalGiven, -balance, receivedList, givenList, true, false
+                        )
+                    );
                 }
             }
         }
     }
 
-    // showGivenHeader is true only for "Money Should Come" section
     private LinearLayout createAccountBox(
-            String name, int totalTaken, int totalPaid, int balance,
-            ArrayList<EntryBase> takenList,
-            ArrayList<EntryBase> paidList,
+            String name, int totalPrimary, int totalSecondary, int balance,
+            ArrayList<? extends EntryBase> primaryList,
+            ArrayList<? extends EntryBase> secondaryList,
             boolean iHaveToPaySection,
             boolean showGivenHeader) {
 
@@ -99,9 +98,7 @@ public class SummaryFragment extends Fragment {
         box.setOrientation(LinearLayout.VERTICAL);
 
         GradientDrawable drawable = new GradientDrawable();
-        drawable.setCornerRadii(new float[]{
-                32,32,32,32,12,12,12,12 // Top more curved
-        });
+        drawable.setCornerRadii(new float[]{32,32,32,32,12,12,12,12});
         drawable.setColor(0xFFF8FFF3);
         drawable.setStroke(3, 0xFFBFBFBF);
         box.setBackground(drawable);
@@ -115,11 +112,11 @@ public class SummaryFragment extends Fragment {
         TextView heading = new TextView(getContext());
         String headingText;
         if (showGivenHeader) {
-            headingText = "You Gived Money to " + name + " ₹" + totalTaken;
+            headingText = "You Gived Money to " + name + " ₹" + totalPrimary;
         } else if (iHaveToPaySection) {
-            headingText = "You Taken from " + name + " ₹" + totalTaken;
+            headingText = "You Taken from " + name + " ₹" + totalPrimary;
         } else {
-            headingText = name + " ₹" + totalTaken;
+            headingText = name + " ₹" + totalPrimary;
         }
         heading.setText(headingText);
         heading.setTypeface(null, Typeface.BOLD);
@@ -130,41 +127,81 @@ public class SummaryFragment extends Fragment {
         heading.setGravity(Gravity.CENTER);
         box.addView(heading);
 
-        // Entries Table
-        for (int i = 0; i < takenList.size(); i++) {
-            EntryBase entry = takenList.get(i);
-            LinearLayout row = new LinearLayout(getContext());
-            row.setOrientation(LinearLayout.HORIZONTAL);
+        // Section 1: All given or received entries (primary direction)
+        if (!primaryList.isEmpty()) {
+            for (int i = 0; i < primaryList.size(); i++) {
+                EntryBase entry = primaryList.get(i);
+                LinearLayout row = new LinearLayout(getContext());
+                row.setOrientation(LinearLayout.HORIZONTAL);
 
-            TextView entryLeft = new TextView(getContext());
-            String leftText = entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
-            entryLeft.setText(leftText.trim());
-            entryLeft.setTextSize(16);
-            entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-            row.addView(entryLeft);
+                TextView entryLeft = new TextView(getContext());
+                String leftText = entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
+                entryLeft.setText(leftText.trim());
+                entryLeft.setTextSize(16);
+                entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+                row.addView(entryLeft);
 
-            TextView entryRight = new TextView(getContext());
-            entryRight.setText(formatDate(entry.getDate()));
-            entryRight.setTextSize(16);
-            entryRight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-            entryRight.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
-            row.addView(entryRight);
+                TextView entryRight = new TextView(getContext());
+                entryRight.setText(formatDate(entry.getDate()));
+                entryRight.setTextSize(16);
+                entryRight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+                entryRight.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+                row.addView(entryRight);
 
-            row.setPadding(20, 10, 20, 10);
-            box.addView(row);
+                row.setPadding(20, 10, 20, 10);
+                box.addView(row);
 
-            if (i != takenList.size() - 1) {
-                addDivider(box, 1);
+                if (i != primaryList.size() - 1 || !secondaryList.isEmpty()) {
+                    addDivider(box, 1);
+                }
             }
         }
 
-        // Paid row
+        // Section 2: All secondary entries (the other direction)
+        if (!secondaryList.isEmpty()) {
+            // Add a label for secondary entries if both lists are not empty (helps clarity)
+            TextView paidLabel = new TextView(getContext());
+            paidLabel.setText(iHaveToPaySection ? "You Gave Entries:" : "Paid Entries:");
+            paidLabel.setTypeface(null, Typeface.ITALIC);
+            paidLabel.setTextColor(0xFFA0A0A0);
+            paidLabel.setPadding(24, 0, 0, 0);
+            box.addView(paidLabel);
+
+            for (int i = 0; i < secondaryList.size(); i++) {
+                EntryBase entry = secondaryList.get(i);
+                LinearLayout row = new LinearLayout(getContext());
+                row.setOrientation(LinearLayout.HORIZONTAL);
+
+                TextView entryLeft = new TextView(getContext());
+                String leftText = entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
+                entryLeft.setText(leftText.trim());
+                entryLeft.setTextSize(16);
+                entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+                row.addView(entryLeft);
+
+                TextView entryRight = new TextView(getContext());
+                entryRight.setText(formatDate(entry.getDate()));
+                entryRight.setTextSize(16);
+                entryRight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+                entryRight.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+                row.addView(entryRight);
+
+                row.setPadding(20, 10, 20, 10);
+                box.addView(row);
+
+                if (i != secondaryList.size() - 1) {
+                    addDivider(box, 1);
+                }
+            }
+        }
+
+        // Totals & Balance
         TextView paidRow = new TextView(getContext());
         String paidRowText;
         if (iHaveToPaySection) {
-            paidRowText = "You Paid to " + name + " Paid ₹" + totalPaid;
+            paidRowText = "You Paid to " + name + " Paid ₹" + totalSecondary;
         } else {
-            paidRowText = name + " Paid ₹" + totalPaid;
+            paidRowText = name + " Paid ₹" + totalSecondary;
         }
         paidRow.setText(paidRowText);
         paidRow.setTypeface(null, Typeface.BOLD);
@@ -173,7 +210,6 @@ public class SummaryFragment extends Fragment {
         paidRow.setGravity(Gravity.CENTER_VERTICAL);
         box.addView(paidRow);
 
-        // Balance row
         TextView balanceView = new TextView(getContext());
         balanceView.setText("Balance ₹" + balance);
         balanceView.setTypeface(null, Typeface.BOLD);
@@ -196,7 +232,6 @@ public class SummaryFragment extends Fragment {
     }
 
     private String formatDate(String inputDate) {
-        // Parse yyyy-MM-dd or dd/MM/yyyy to dd-MM-yyyy
         try {
             Date date = null;
             if (inputDate.contains("/")) {
