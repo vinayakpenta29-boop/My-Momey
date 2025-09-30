@@ -46,6 +46,9 @@ public class GivenFragment extends Fragment {
         noteInput = v.findViewById(R.id.editTextNote);
         addButton = v.findViewById(R.id.buttonAdd);
 
+        // Set orange background and rounded corners for the Add button
+        addButton.setBackgroundResource(R.drawable.orange_rounded_button);
+
         addButton.setOnClickListener(view -> {
             String name = nameInput.getText().toString().trim();
             String amountStr = amountInput.getText().toString().trim();
