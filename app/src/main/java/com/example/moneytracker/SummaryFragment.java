@@ -56,30 +56,27 @@ public class SummaryFragment extends Fragment {
             for (EntryBase e : givenList) totalGiven += e.getAmount();
             for (EntryBase e : receivedList) totalPaid += e.getAmount();
             int balance = totalGiven - totalPaid;
-
             boolean hasEntries = !givenList.isEmpty() || !receivedList.isEmpty();
 
             if (hasEntries) {
-                // The section is determined by the PAST sign,
-                // so we keep track of which section this account has been in previously.
+                // Ensure: If ever owed then always remain in I Have to Pay even if settled
                 if (balance > 0) {
                     layoutMoneyShouldCome.addView(
-                        createAccountBox(name, totalGiven, totalPaid, balance, givenList, receivedList, false, true)
+                            createAccountBox(name, totalGiven, totalPaid, balance, givenList, receivedList, false, true)
                     );
                 } else if (balance < 0) {
                     layoutIHaveToPay.addView(
-                        createAccountBox(name, totalPaid, totalGiven, -balance, receivedList, givenList, true, false)
+                            createAccountBox(name, totalPaid, totalGiven, -balance, receivedList, givenList, true, false)
                     );
                 } else { // balance == 0
-                    // Remain in previous section unless sign changed.
-                    // Here, prefer to show where the latest nonzero balance was.
-                    if (totalGiven >= totalPaid) {
-                        layoutMoneyShouldCome.addView(
-                            createAccountBox(name, totalGiven, totalPaid, balance, givenList, receivedList, false, true)
+                    // Only show in "I have to Pay" if user ever owed this account (i.e., totalPaid > totalGiven)
+                    if (totalPaid > totalGiven) {
+                        layoutIHaveToPay.addView(
+                                createAccountBox(name, totalPaid, totalGiven, -balance, receivedList, givenList, true, false)
                         );
                     } else {
-                        layoutIHaveToPay.addView(
-                            createAccountBox(name, totalPaid, totalGiven, -balance, receivedList, givenList, true, false)
+                        layoutMoneyShouldCome.addView(
+                                createAccountBox(name, totalGiven, totalPaid, balance, givenList, receivedList, false, true)
                         );
                     }
                 }
@@ -99,7 +96,7 @@ public class SummaryFragment extends Fragment {
 
         GradientDrawable drawable = new GradientDrawable();
         drawable.setCornerRadii(new float[]{32,32,32,32,12,12,12,12});
-        drawable.setColor(0xFFF8FFF3); // light curved box as per screenshot
+        drawable.setColor(0xFFF8FFF3);
         drawable.setStroke(3, 0xFFBFBFBF);
         box.setBackground(drawable);
 
@@ -113,21 +110,23 @@ public class SummaryFragment extends Fragment {
         String headingText;
         if (showGivenHeader) {
             headingText = "You Gived Money to " + name + " ₹" + totalPrimary;
+            heading.setBackgroundColor(0xFFA0FFA0);
         } else if (iHaveToPaySection) {
             headingText = "You Taken from " + name + " ₹" + totalPrimary;
+            heading.setBackgroundColor(0xFFA0D0FF);
         } else {
             headingText = name + " ₹" + totalPrimary;
+            heading.setBackgroundColor(0xFFA0FFA0);
         }
         heading.setText(headingText);
         heading.setTypeface(null, Typeface.BOLD);
         heading.setTextColor(0xFFEA4444);
         heading.setTextSize(20);
-        heading.setBackgroundColor(0xFFA0FFA0);
         heading.setPadding(20, 16, 20, 16);
         heading.setGravity(Gravity.CENTER);
         box.addView(heading);
 
-        // Entries
+        // Entries Primary (Given or Received)
         if (!primaryList.isEmpty()) {
             for (int i = 0; i < primaryList.size(); i++) {
                 EntryBase entry = primaryList.get(i);
@@ -157,6 +156,7 @@ public class SummaryFragment extends Fragment {
             }
         }
 
+        // Entries Secondary (Paid, Given, Received)
         if (!secondaryList.isEmpty()) {
             TextView paidLabel = new TextView(getContext());
             paidLabel.setText(iHaveToPaySection ? "You Gave Entries:" : "Paid Entries:");
@@ -208,12 +208,12 @@ public class SummaryFragment extends Fragment {
         paidRow.setGravity(Gravity.CENTER_VERTICAL);
         box.addView(paidRow);
 
-        // Show Settled message if balance is zero
+        // Balance or Settled
         if (balance == 0) {
             TextView settledView = new TextView(getContext());
             settledView.setText("Settled");
             settledView.setTypeface(null, Typeface.BOLD_ITALIC);
-            settledView.setTextColor(0xFF27AE60); // Green
+            settledView.setTextColor(0xFF27AE60);
             settledView.setTextSize(18);
             settledView.setPadding(20, 10, 20, 10);
             settledView.setGravity(Gravity.CENTER);
