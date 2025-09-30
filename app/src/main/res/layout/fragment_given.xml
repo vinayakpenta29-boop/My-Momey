@@ -17,7 +17,7 @@
             android:id="@+id/editTextName"
             android:hint="Name"
             android:background="@drawable/bg_curved_white_box"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="20dp"
             android:padding="18dp"
             android:textColor="#393862"
             android:textStyle="bold"
