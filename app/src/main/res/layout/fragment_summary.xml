@@ -17,12 +17,6 @@
         android:gravity="center"
         android:paddingBottom="8dp"/>
 
-    <LinearLayout
-        android:id="@+id/layoutMoneyShouldCome"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
     <View
         android:layout_width="match_parent"
         android:layout_height="2dp"
@@ -40,10 +34,5 @@
         android:gravity="center"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"/>
-
-    <LinearLayout
-        android:id="@+id/layoutIHaveToPay"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+    
 </LinearLayout>
