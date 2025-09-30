@@ -1,60 +1,49 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
+    android:background="#23223C"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#23223C"
     android:padding="24dp">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/moneyShouldComeTitle"
+        android:text="Money should Come"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_large_curved_box"
-        android:padding="24dp"
-        android:orientation="vertical">
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingBottom="8dp"/>
 
-        <EditText
-            android:id="@+id/editTextName"
-            android:hint="Name"
-            android:background="@drawable/bg_curved_white_box"
-            android:layout_marginBottom="20dp"
-            android:padding="18dp"
-            android:textColor="#393862"
-            android:textStyle="bold"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"/>
+    <LinearLayout
+        android:id="@+id/layoutMoneyShouldCome"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
-        <EditText
-            android:id="@+id/editTextAmount"
-            android:hint="Amount"
-            android:inputType="number"
-            android:background="@drawable/bg_curved_white_box"
-            android:layout_marginBottom="16dp"
-            android:padding="18dp"
-            android:textColor="#393862"
-            android:textStyle="bold"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="#393862"
+        android:layout_marginVertical="10dp"/>
 
-        <EditText
-            android:id="@+id/editTextNote"
-            android:hint="Note"
-            android:background="@drawable/bg_curved_white_box"
-            android:layout_marginBottom="24dp"
-            android:padding="18dp"
-            android:textColor="#393862"
-            android:textStyle="bold"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"/>
+    <TextView
+        android:id="@+id/iHaveToPayTitle"
+        android:text="I have to Pay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"/>
 
-        <Button
-            android:id="@+id/buttonAdd"
-            android:text="ADD"
-            android:background="@drawable/bg_curved_orange"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"/>
-    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/layoutIHaveToPay"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 </LinearLayout>
