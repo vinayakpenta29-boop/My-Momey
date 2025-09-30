@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -57,19 +58,30 @@ public class SummaryFragment extends Fragment {
             int balance = totalGiven - totalPaid;
 
             boolean hasEntries = !givenList.isEmpty() || !receivedList.isEmpty();
+
             if (hasEntries) {
-                if (balance >= 0) {
+                // The section is determined by the PAST sign,
+                // so we keep track of which section this account has been in previously.
+                if (balance > 0) {
                     layoutMoneyShouldCome.addView(
-                        createAccountBox(
-                            name, totalGiven, totalPaid, balance, givenList, receivedList, false, true
-                        )
+                        createAccountBox(name, totalGiven, totalPaid, balance, givenList, receivedList, false, true)
                     );
-                } else {
+                } else if (balance < 0) {
                     layoutIHaveToPay.addView(
-                        createAccountBox(
-                            name, totalPaid, totalGiven, -balance, receivedList, givenList, true, false
-                        )
+                        createAccountBox(name, totalPaid, totalGiven, -balance, receivedList, givenList, true, false)
                     );
+                } else { // balance == 0
+                    // Remain in previous section unless sign changed.
+                    // Here, prefer to show where the latest nonzero balance was.
+                    if (totalGiven >= totalPaid) {
+                        layoutMoneyShouldCome.addView(
+                            createAccountBox(name, totalGiven, totalPaid, balance, givenList, receivedList, false, true)
+                        );
+                    } else {
+                        layoutIHaveToPay.addView(
+                            createAccountBox(name, totalPaid, totalGiven, -balance, receivedList, givenList, true, false)
+                        );
+                    }
                 }
             }
         }
@@ -196,14 +208,26 @@ public class SummaryFragment extends Fragment {
         paidRow.setGravity(Gravity.CENTER_VERTICAL);
         box.addView(paidRow);
 
-        TextView balanceView = new TextView(getContext());
-        balanceView.setText("Balance ₹" + balance);
-        balanceView.setTypeface(null, Typeface.BOLD);
-        balanceView.setTextColor(0xFFEA4444);
-        balanceView.setTextSize(18);
-        balanceView.setPadding(20, 10, 20, 10);
-        balanceView.setGravity(Gravity.CENTER_VERTICAL);
-        box.addView(balanceView);
+        // Show Settled message if balance is zero
+        if (balance == 0) {
+            TextView settledView = new TextView(getContext());
+            settledView.setText("Settled");
+            settledView.setTypeface(null, Typeface.BOLD_ITALIC);
+            settledView.setTextColor(0xFF27AE60); // Green
+            settledView.setTextSize(18);
+            settledView.setPadding(20, 10, 20, 10);
+            settledView.setGravity(Gravity.CENTER);
+            box.addView(settledView);
+        } else {
+            TextView balanceView = new TextView(getContext());
+            balanceView.setText("Balance ₹" + balance);
+            balanceView.setTypeface(null, Typeface.BOLD);
+            balanceView.setTextColor(0xFFEA4444);
+            balanceView.setTextSize(18);
+            balanceView.setPadding(20, 10, 20, 10);
+            balanceView.setGravity(Gravity.CENTER_VERTICAL);
+            box.addView(balanceView);
+        }
 
         return box;
     }
