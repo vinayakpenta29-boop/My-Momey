@@ -1,59 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:background="#23223C"
-    android:padding="24dp"
+    android:background="#232345"
+    android:padding="16dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <EditText
+        android:id="@+id/editTextName"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_large_curved_box"
-        android:padding="24dp"
-        android:orientation="vertical">
+        android:layout_height="48dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/rounded_box_dark"
+        android:hint="Name"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#888CA7"
+        android:textSize="16sp" />
 
-        <EditText
-            android:id="@+id/editTextName"
-            android:hint="Name"
-            android:background="@drawable/bg_curved_white_box"
-            android:layout_marginBottom="16dp"
-            android:padding="18dp"
-            android:textColor="#393862"
-            android:textStyle="bold"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"/>
+    <EditText
+        android:id="@+id/editTextAmount"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/rounded_box_dark"
+        android:hint="Amount"
+        android:inputType="number"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#888CA7"
+        android:textSize="16sp" />
 
-        <EditText
-            android:id="@+id/editTextAmount"
-            android:hint="Amount"
-            android:inputType="number"
-            android:background="@drawable/bg_curved_white_box"
-            android:layout_marginBottom="16dp"
-            android:padding="18dp"
-            android:textColor="#393862"
-            android:textStyle="bold"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"/>
+    <EditText
+        android:id="@+id/editTextNote"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/rounded_box_dark"
+        android:hint="Note"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#888CA7"
+        android:textSize="16sp" />
 
-        <EditText
-            android:id="@+id/editTextNote"
-            android:hint="Note"
-            android:background="@drawable/bg_curved_white_box"
-            android:layout_marginBottom="24dp"
-            android:padding="18dp"
-            android:textColor="#393862"
-            android:textStyle="bold"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"/>
+    <Button
+        android:id="@+id/buttonAdd"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/orange_rounded_button"
+        android:text="ADD"
+        android:textAllCaps="true"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:textSize="18sp" />
 
-        <Button
-            android:id="@+id/buttonAdd"
-            android:text="ADD"
-            android:background="@drawable/bg_curved_orange"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:textSize="20sp"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"/>
-    </LinearLayout>
 </LinearLayout>
