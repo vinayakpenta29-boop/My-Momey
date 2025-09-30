@@ -47,18 +47,6 @@ public class SummaryFragment extends Fragment {
         allNames.addAll(gaveMap.keySet());
         allNames.addAll(receivedMap.keySet());
 
-        TextView moneyShouldComeTitle = new TextView(getContext());
-        moneyShouldComeTitle.setText("Money should Come");
-        moneyShouldComeTitle.setTypeface(null, Typeface.BOLD);
-        moneyShouldComeTitle.setTextSize(18);
-        layoutMoneyShouldCome.addView(moneyShouldComeTitle);
-
-        TextView iHaveToPayTitle = new TextView(getContext());
-        iHaveToPayTitle.setText("I have to Pay");
-        iHaveToPayTitle.setTypeface(null, Typeface.BOLD);
-        iHaveToPayTitle.setTextSize(18);
-        layoutIHaveToPay.addView(iHaveToPayTitle);
-
         for (String name : allNames) {
             ArrayList<GivenFragment.Entry> givenList = gaveMap.getOrDefault(name, new ArrayList<>());
             ArrayList<ReceivedFragment.Entry> receivedList = receivedMap.getOrDefault(name, new ArrayList<>());
