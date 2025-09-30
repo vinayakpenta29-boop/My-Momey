@@ -1,32 +1,59 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:background="#23223C"
+    android:padding="24dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/editTextName"
-        android:hint="Name"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_large_curved_box"
+        android:padding="24dp"
+        android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/editTextAmount"
-        android:hint="Amount"
-        android:inputType="number"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/editTextName"
+            android:hint="Name"
+            android:background="@drawable/bg_curved_white_box"
+            android:layout_marginBottom="16dp"
+            android:padding="18dp"
+            android:textColor="#393862"
+            android:textStyle="bold"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"/>
 
-    <EditText
-        android:id="@+id/editTextNote"
-        android:hint="Note"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/editTextAmount"
+            android:hint="Amount"
+            android:inputType="number"
+            android:background="@drawable/bg_curved_white_box"
+            android:layout_marginBottom="16dp"
+            android:padding="18dp"
+            android:textColor="#393862"
+            android:textStyle="bold"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"/>
 
-    <Button
-        android:id="@+id/buttonAdd"
-        android:text="Add"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/editTextNote"
+            android:hint="Note"
+            android:background="@drawable/bg_curved_white_box"
+            android:layout_marginBottom="24dp"
+            android:padding="18dp"
+            android:textColor="#393862"
+            android:textStyle="bold"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"/>
+
+        <Button
+            android:id="@+id/buttonAdd"
+            android:text="ADD"
+            android:background="@drawable/bg_curved_orange"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"/>
+    </LinearLayout>
 </LinearLayout>
