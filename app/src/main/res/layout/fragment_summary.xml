@@ -1,38 +1,14 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:background="#23223C"
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp">
+    android:background="#232345"
+    android:padding="16dp">
 
-    <TextView
-        android:id="@+id/moneyShouldComeTitle"
-        android:text="Money should Come"
+    <LinearLayout
+        android:id="@+id/summary_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:paddingBottom="8dp"/>
+        android:orientation="vertical"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="#393862"
-        android:layout_marginVertical="10dp"/>
-
-    <TextView
-        android:id="@+id/iHaveToPayTitle"
-        android:text="I have to Pay"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"/>
-    
-</LinearLayout>
+</ScrollView>
