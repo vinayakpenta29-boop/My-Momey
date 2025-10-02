@@ -18,12 +18,13 @@ public class TabAdapter extends FragmentStateAdapter {
             case 0: return new GivenFragment();
             case 1: return new ReceivedFragment();
             case 2: return new SummaryFragment();
+            case 3: return new TransactionsFragment(); // <-- Added this line
             default: return new GivenFragment();
         }
     }
 
     @Override
     public int getItemCount() {
-        return 3;
+        return 4; // <-- Updated to 4 fragments
     }
 }
