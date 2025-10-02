@@ -1,5 +1,7 @@
 package com.example.moneytracker;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -8,8 +10,12 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
@@ -18,6 +24,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
@@ -25,12 +33,22 @@ import java.util.TreeSet;
 public class SummaryFragment extends Fragment {
 
     private LinearLayout layoutMoneyShouldCome, layoutIHaveToPay;
+    private Button btnDeleteAccounts;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_summary, container, false);
         layoutMoneyShouldCome = v.findViewById(R.id.layoutMoneyShouldCome);
         layoutIHaveToPay = v.findViewById(R.id.layoutIHaveToPay);
+        btnDeleteAccounts = v.findViewById(R.id.btnDeleteAccounts);
+
+        btnDeleteAccounts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showAccountDeleteDialog();
+            }
+        });
+
         refreshView();
         return v;
     }
@@ -59,32 +77,90 @@ public class SummaryFragment extends Fragment {
             boolean hasEntries = !givenList.isEmpty() || !receivedList.isEmpty();
 
             if (hasEntries) {
-                // Money should come: balance > 0
                 if (balance > 0) {
                     layoutMoneyShouldCome.addView(
-                            createAccountBox(name, totalGiven, totalPaid, balance, givenList, receivedList, false, true)
-                    );
-                }
-                // I have to Pay: balance < 0, or if previously in this section and balance == 0
-                else if (balance < 0) {
+                            createAccountBox(name, totalGiven, totalPaid, balance, givenList, receivedList, false, true));
+                } else if (balance < 0) {
                     layoutIHaveToPay.addView(
-                            createAccountBox(name, totalPaid, totalGiven, -balance, receivedList, givenList, true, false)
-                    );
-                }
-                // If previously in I have to Pay and settled, keep in section, do NOT move to Money should Come
-                else if (balance == 0 && totalPaid > totalGiven) {
+                            createAccountBox(name, totalPaid, totalGiven, -balance, receivedList, givenList, true, false));
+                } else if (balance == 0 && totalPaid > totalGiven) {
                     layoutIHaveToPay.addView(
-                            createAccountBox(name, totalPaid, totalGiven, 0, receivedList, givenList, true, false)
-                    );
-                }
-                // Otherwise show in Money should Come (e.g. normal settlement)
-                else if (balance == 0) {
+                            createAccountBox(name, totalPaid, totalGiven, 0, receivedList, givenList, true, false));
+                } else if (balance == 0) {
                     layoutMoneyShouldCome.addView(
-                            createAccountBox(name, totalGiven, totalPaid, 0, givenList, receivedList, false, true)
-                    );
+                            createAccountBox(name, totalGiven, totalPaid, 0, givenList, receivedList, false, true));
                 }
             }
         }
+    }
+
+    private void showAccountDeleteDialog() {
+        // Collect all account names
+        HashMap<String, ArrayList<GivenFragment.Entry>> gaveMap = GivenFragment.givenMap;
+        HashMap<String, ArrayList<ReceivedFragment.Entry>> receivedMap = ReceivedFragment.receivedMap;
+        Set<String> allNames = new LinkedHashSet<>();
+        allNames.addAll(gaveMap.keySet());
+        allNames.addAll(receivedMap.keySet());
+        final List<String> accountList = new ArrayList<>(allNames);
+
+        if (accountList.isEmpty()) {
+            Toast.makeText(getContext(), "No accounts to delete!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // State array for checked boxes
+        boolean[] checkedArr = new boolean[accountList.size()];
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Select accounts to delete");
+        builder.setMultiChoiceItems(accountList.toArray(new String[0]), checkedArr, new DialogInterface.OnMultiChoiceClickListener() {
+            @Override public void onClick(DialogInterface dialog, int which, boolean isChecked) { }
+        });
+
+        builder.setNegativeButton("Cancel", null);
+
+        builder.setPositiveButton("Delete", (dialog, which) -> {
+            List<String> selectedAccounts = new ArrayList<>();
+            for (int i = 0; i < accountList.size(); i++) {
+                if (((AlertDialog)dialog).getListView().isItemChecked(i)) {
+                    selectedAccounts.add(accountList.get(i));
+                }
+            }
+            if (selectedAccounts.isEmpty()) {
+                Toast.makeText(getContext(), "No accounts selected", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            showDeleteConfirmation(selectedAccounts);
+        });
+
+        builder.show();
+    }
+
+    private void showDeleteConfirmation(List<String> selectedAccounts) {
+        StringBuilder msg = new StringBuilder();
+        for (String name : selectedAccounts) {
+            msg.append(name).append(", ");
+        }
+        if (msg.length() > 2) msg.setLength(msg.length() - 2);
+        String message = "Are you sure you want to delete these accounts?
+" + msg.toString();
+
+        new AlertDialog.Builder(getContext())
+                .setTitle("Confirm Deletion")
+                .setMessage(message)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("OK", (dialog, which) -> {
+                    deleteSelectedAccounts(selectedAccounts);
+                })
+                .show();
+    }
+
+    private void deleteSelectedAccounts(List<String> selectedAccounts) {
+        for (String name : selectedAccounts) {
+            GivenFragment.givenMap.remove(name);
+            ReceivedFragment.receivedMap.remove(name);
+        }
+        Toast.makeText(getContext(), "Deleted: " + TextUtils.join(", ", selectedAccounts), Toast.LENGTH_SHORT).show();
+        refreshView();
     }
 
     private LinearLayout createAccountBox(
