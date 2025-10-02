@@ -59,26 +59,29 @@ public class SummaryFragment extends Fragment {
             boolean hasEntries = !givenList.isEmpty() || !receivedList.isEmpty();
 
             if (hasEntries) {
-                // Ensure: If ever owed then always remain in I Have to Pay even if settled
+                // Money should come: balance > 0
                 if (balance > 0) {
                     layoutMoneyShouldCome.addView(
                             createAccountBox(name, totalGiven, totalPaid, balance, givenList, receivedList, false, true)
                     );
-                } else if (balance < 0) {
+                }
+                // I have to Pay: balance < 0, or if previously in this section and balance == 0
+                else if (balance < 0) {
                     layoutIHaveToPay.addView(
                             createAccountBox(name, totalPaid, totalGiven, -balance, receivedList, givenList, true, false)
                     );
-                } else { // balance == 0
-                    // Only show in "I have to Pay" if user ever owed this account (i.e., totalPaid > totalGiven)
-                    if (totalPaid > totalGiven) {
-                        layoutIHaveToPay.addView(
-                                createAccountBox(name, totalPaid, totalGiven, -balance, receivedList, givenList, true, false)
-                        );
-                    } else {
-                        layoutMoneyShouldCome.addView(
-                                createAccountBox(name, totalGiven, totalPaid, balance, givenList, receivedList, false, true)
-                        );
-                    }
+                }
+                // If previously in I have to Pay and settled, keep in section, do NOT move to Money should Come
+                else if (balance == 0 && totalPaid > totalGiven) {
+                    layoutIHaveToPay.addView(
+                            createAccountBox(name, totalPaid, totalGiven, 0, receivedList, givenList, true, false)
+                    );
+                }
+                // Otherwise show in Money should Come (e.g. normal settlement)
+                else if (balance == 0) {
+                    layoutMoneyShouldCome.addView(
+                            createAccountBox(name, totalGiven, totalPaid, 0, givenList, receivedList, false, true)
+                    );
                 }
             }
         }
