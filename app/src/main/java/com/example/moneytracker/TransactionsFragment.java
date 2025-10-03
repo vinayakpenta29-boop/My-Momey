@@ -1,8 +1,9 @@
 package com.example.moneytracker;
 
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,8 +18,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class TransactionsFragment extends Fragment {
 
@@ -33,73 +34,79 @@ public class TransactionsFragment extends Fragment {
     }
 
     private void showAllTransactions() {
-        if (layoutTransactions == null) return;
-
         layoutTransactions.removeAllViews();
 
+        // Combine all accounts from both maps
         HashMap<String, ArrayList<GivenFragment.Entry>> gaveMap = GivenFragment.givenMap;
         HashMap<String, ArrayList<ReceivedFragment.Entry>> receivedMap = ReceivedFragment.receivedMap;
 
-        Set<String> allNames = new TreeSet<>();
-        allNames.addAll(gaveMap.keySet());
-        allNames.addAll(receivedMap.keySet());
+        Map<String, ArrayList<EntryBase>> allEntriesMap = new TreeMap<>();
 
-        for (String name : allNames) {
-            ArrayList<GivenFragment.Entry> givenList = gaveMap.getOrDefault(name, new ArrayList<>());
-            ArrayList<ReceivedFragment.Entry> receivedList = receivedMap.getOrDefault(name, new ArrayList<>());
+        // Add Given entries
+        for (String name : gaveMap.keySet()) {
+            ArrayList<GivenFragment.Entry> entries = gaveMap.get(name);
+            for (GivenFragment.Entry entry : entries) {
+                if (!allEntriesMap.containsKey(name)) allEntriesMap.put(name, new ArrayList<>());
+                allEntriesMap.get(name).add(entry);
+            }
+        }
+        // Add Received entries
+        for (String name : receivedMap.keySet()) {
+            ArrayList<ReceivedFragment.Entry> entries = receivedMap.get(name);
+            for (ReceivedFragment.Entry entry : entries) {
+                if (!allEntriesMap.containsKey(name)) allEntriesMap.put(name, new ArrayList<>());
+                allEntriesMap.get(name).add(entry);
+            }
+        }
 
-            if (givenList.isEmpty() && receivedList.isEmpty()) continue;
-
-            // Account Name Header
+        // For each account, show all its entries
+        for (String name : allEntriesMap.keySet()) {
+            // Header
             TextView accountHeader = new TextView(getContext());
             accountHeader.setText(name);
-            accountHeader.setTextSize(20);
-            accountHeader.setTypeface(null, android.graphics.Typeface.BOLD);
-            accountHeader.setPadding(16, 32, 16, 16);
+            accountHeader.setTypeface(null, Typeface.BOLD);
+            accountHeader.setTextSize(18);
+            accountHeader.setTextColor(0xFF27AE60);
+            accountHeader.setPadding(16, 24, 16, 10);
             layoutTransactions.addView(accountHeader);
 
-            // Given Entries
-            for (GivenFragment.Entry entry : givenList) {
-                layoutTransactions.addView(createTransactionRow("Gave", entry.getAmount(), entry.getNote(), entry.getDate()));
-            }
-            // Received Entries
-            for (ReceivedFragment.Entry entry : receivedList) {
-                layoutTransactions.addView(createTransactionRow("Received", entry.getAmount(), entry.getNote(), entry.getDate()));
+            ArrayList<EntryBase> entries = allEntriesMap.get(name);
+
+            for (EntryBase entry : entries) {
+                LinearLayout entryRow = new LinearLayout(getContext());
+                entryRow.setOrientation(LinearLayout.HORIZONTAL);
+                entryRow.setPadding(16, 8, 16, 8);
+
+                // Amount + note
+                TextView entryDetails = new TextView(getContext());
+                String details = entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
+                entryDetails.setText(details.trim());
+                entryDetails.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+
+                // date
+                TextView entryDate = new TextView(getContext());
+                entryDate.setText(formatDate(entry.getDate()));
+                entryDate.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+                entryDate.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+
+                entryRow.addView(entryDetails);
+                entryRow.addView(entryDate);
+
+                layoutTransactions.addView(entryRow);
+
+                // Divider
+                addDivider(layoutTransactions, 1);
             }
         }
     }
 
-    private View createTransactionRow(String type, int amount, String note, String dateStr) {
-        LinearLayout row = new LinearLayout(getContext());
-        row.setOrientation(LinearLayout.HORIZONTAL);
-
-        TextView typeView = new TextView(getContext());
-        typeView.setText(type);
-        typeView.setTextSize(16);
-        typeView.setPadding(8, 8, 16, 8);
-
-        TextView amountView = new TextView(getContext());
-        amountView.setText("₹" + amount);
-        amountView.setTextSize(16);
-        amountView.setPadding(8, 8, 16, 8);
-
-        TextView noteView = new TextView(getContext());
-        noteView.setText(TextUtils.isEmpty(note) ? "" : note);
-        noteView.setTextSize(16);
-        noteView.setPadding(8, 8, 16, 8);
-
-        TextView dateView = new TextView(getContext());
-        dateView.setText(formatDate(dateStr));
-        dateView.setTextSize(16);
-        dateView.setPadding(8, 8, 8, 8);
-        dateView.setGravity(Gravity.END);
-
-        row.addView(typeView);
-        row.addView(amountView);
-        row.addView(noteView);
-        row.addView(dateView);
-
-        return row;
+    private void addDivider(LinearLayout layout, int thicknessDp) {
+        View line = new View(getContext());
+        LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, thicknessDp * 2);
+        line.setLayoutParams(lineParams);
+        line.setBackgroundColor(0xFFD1D1D1);
+        layout.addView(line);
     }
 
     private String formatDate(String inputDate) {
@@ -113,7 +120,7 @@ public class TransactionsFragment extends Fragment {
             if (date != null) {
                 return new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(date);
             }
-        } catch (ParseException e) { }
+        } catch (ParseException e) {}
         return inputDate;
     }
 }
