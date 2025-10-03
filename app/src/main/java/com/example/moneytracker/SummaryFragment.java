@@ -141,8 +141,7 @@ public class SummaryFragment extends Fragment {
             msg.append(name).append(", ");
         }
         if (msg.length() > 2) msg.setLength(msg.length() - 2);
-        String message = "Are you sure you want to delete these accounts?
-" + msg.toString();
+        String message = "Are you sure you want to delete these accounts?" + msg.toString();
 
         new AlertDialog.Builder(getContext())
                 .setTitle("Confirm Deletion")
