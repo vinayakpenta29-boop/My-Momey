@@ -10,7 +10,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -33,7 +33,7 @@ import java.util.TreeSet;
 public class SummaryFragment extends Fragment {
 
     private LinearLayout layoutMoneyShouldCome, layoutIHaveToPay;
-    private Button btnDeleteAccounts;
+    private ImageButton btnDeleteAccounts;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
