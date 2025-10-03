@@ -1,7 +1,6 @@
 package com.example.moneytracker;
 
 import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -9,9 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import androidx.fragment.app.Fragment;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,22 +37,42 @@ public class TransactionsFragment extends Fragment {
         HashMap<String, ArrayList<GivenFragment.Entry>> gaveMap = GivenFragment.givenMap;
         HashMap<String, ArrayList<ReceivedFragment.Entry>> receivedMap = ReceivedFragment.receivedMap;
 
+        // Check if both maps are empty and show no data message
+        boolean isGivenEmpty = (gaveMap == null || gaveMap.isEmpty());
+        boolean isReceivedEmpty = (receivedMap == null || receivedMap.isEmpty());
+
+        if (isGivenEmpty && isReceivedEmpty) {
+            TextView noData = new TextView(getContext());
+            noData.setText("No Data in I Gave or I Received!");
+            noData.setTextSize(18);
+            noData.setTypeface(null, Typeface.BOLD);
+            noData.setTextColor(0xFFFF3A44);
+            noData.setPadding(32, 48, 32, 0);
+            noData.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            layoutTransactions.addView(noData);
+            return;
+        }
+
         Map<String, ArrayList<EntryBase>> allEntriesMap = new TreeMap<>();
 
         // Add Given entries
-        for (String name : gaveMap.keySet()) {
-            ArrayList<GivenFragment.Entry> entries = gaveMap.get(name);
-            for (GivenFragment.Entry entry : entries) {
-                if (!allEntriesMap.containsKey(name)) allEntriesMap.put(name, new ArrayList<>());
-                allEntriesMap.get(name).add(entry);
+        if (gaveMap != null) {
+            for (String name : gaveMap.keySet()) {
+                ArrayList<GivenFragment.Entry> entries = gaveMap.get(name);
+                for (GivenFragment.Entry entry : entries) {
+                    if (!allEntriesMap.containsKey(name)) allEntriesMap.put(name, new ArrayList<>());
+                    allEntriesMap.get(name).add(entry);
+                }
             }
         }
         // Add Received entries
-        for (String name : receivedMap.keySet()) {
-            ArrayList<ReceivedFragment.Entry> entries = receivedMap.get(name);
-            for (ReceivedFragment.Entry entry : entries) {
-                if (!allEntriesMap.containsKey(name)) allEntriesMap.put(name, new ArrayList<>());
-                allEntriesMap.get(name).add(entry);
+        if (receivedMap != null) {
+            for (String name : receivedMap.keySet()) {
+                ArrayList<ReceivedFragment.Entry> entries = receivedMap.get(name);
+                for (ReceivedFragment.Entry entry : entries) {
+                    if (!allEntriesMap.containsKey(name)) allEntriesMap.put(name, new ArrayList<>());
+                    allEntriesMap.get(name).add(entry);
+                }
             }
         }
 
