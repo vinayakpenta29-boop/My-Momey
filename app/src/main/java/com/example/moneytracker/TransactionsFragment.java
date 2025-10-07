@@ -30,6 +30,12 @@ public class TransactionsFragment extends Fragment {
         return v;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        showAllTransactions();
+    }
+
     private void showAllTransactions() {
         layoutTransactions.removeAllViews();
 
