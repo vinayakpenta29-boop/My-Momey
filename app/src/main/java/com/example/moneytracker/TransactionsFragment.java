@@ -6,17 +6,13 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class TransactionsFragment extends Fragment {
 
@@ -39,11 +35,9 @@ public class TransactionsFragment extends Fragment {
     private void showAllTransactions() {
         layoutTransactions.removeAllViews();
 
-        // Combine all accounts from both maps
         HashMap<String, ArrayList<GivenFragment.Entry>> gaveMap = GivenFragment.givenMap;
         HashMap<String, ArrayList<ReceivedFragment.Entry>> receivedMap = ReceivedFragment.receivedMap;
 
-        // Check if both maps are empty and show no data message
         boolean isGivenEmpty = (gaveMap == null || gaveMap.isEmpty());
         boolean isReceivedEmpty = (receivedMap == null || receivedMap.isEmpty());
 
@@ -84,7 +78,6 @@ public class TransactionsFragment extends Fragment {
 
         // For each account, show all its entries
         for (String name : allEntriesMap.keySet()) {
-            // Header
             TextView accountHeader = new TextView(getContext());
             accountHeader.setText(name);
             accountHeader.setTypeface(null, Typeface.BOLD);
@@ -100,19 +93,36 @@ public class TransactionsFragment extends Fragment {
                 entryRow.setOrientation(LinearLayout.HORIZONTAL);
                 entryRow.setPadding(16, 8, 16, 8);
 
-                // Amount + note
+                // Arrow
+                ImageView arrowView = new ImageView(getContext());
+
+                if (entry instanceof GivenFragment.Entry) {
+                    arrowView.setImageResource(R.drawable.ic_arrow_up_red); // export
+                } else {
+                    arrowView.setImageResource(R.drawable.ic_arrow_down_green); // import
+                }
+                LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(48, 48);
+                iconParams.setMargins(0, 0, 16, 0);
+                arrowView.setLayoutParams(iconParams);
+
+                entryRow.addView(arrowView);
+
+                // Amount + note (white color)
                 TextView entryDetails = new TextView(getContext());
                 String details = entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
                 entryDetails.setText(details.trim());
+                entryDetails.setTextColor(0xFFFFFFFF); // white
+                entryDetails.setTypeface(null, Typeface.BOLD);
                 entryDetails.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
-                // date
+                entryRow.addView(entryDetails);
+
                 TextView entryDate = new TextView(getContext());
                 entryDate.setText(formatDate(entry.getDate()));
                 entryDate.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+                entryDate.setTextColor(0xFFA0A0A0);
                 entryDate.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
-                entryRow.addView(entryDetails);
                 entryRow.addView(entryDate);
 
                 layoutTransactions.addView(entryRow);
