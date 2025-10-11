@@ -36,6 +36,9 @@ public class SummaryFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Always load latest persisted data
+        GivenFragment.loadMap(requireContext());
+        ReceivedFragment.loadMap(requireContext());
         View v = inflater.inflate(R.layout.fragment_summary, container, false);
         layoutMoneyShouldCome = v.findViewById(R.id.layoutMoneyShouldCome);
         layoutIHaveToPay = v.findViewById(R.id.layoutIHaveToPay);
@@ -55,6 +58,10 @@ public class SummaryFragment extends Fragment {
     }
 
     public void refreshView() {
+        // Always reload for latest
+        GivenFragment.loadMap(requireContext());
+        ReceivedFragment.loadMap(requireContext());
+
         if (layoutMoneyShouldCome == null || layoutIHaveToPay == null) return;
 
         layoutMoneyShouldCome.removeAllViews();
@@ -165,8 +172,8 @@ public class SummaryFragment extends Fragment {
 
     private void deleteSelectedAccounts(List<String> selectedAccounts) {
         for (String name : selectedAccounts) {
-            GivenFragment.givenMap.remove(name);
-            ReceivedFragment.receivedMap.remove(name);
+            GivenFragment.deleteAccount(getContext(), name);
+            ReceivedFragment.deleteAccount(getContext(), name);
         }
         Toast.makeText(getContext(), "Deleted: " + TextUtils.join(", ", selectedAccounts), Toast.LENGTH_SHORT).show();
         refreshView();
