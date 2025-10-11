@@ -11,9 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.CheckBox;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +32,7 @@ public class SummaryFragment extends Fragment {
 
     private LinearLayout layoutMoneyShouldCome, layoutIHaveToPay;
     private ImageButton btnDeleteAccounts;
+    private TextView textBalanceMoneyShouldCome, textBalanceIHaveToPay;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -41,6 +40,8 @@ public class SummaryFragment extends Fragment {
         layoutMoneyShouldCome = v.findViewById(R.id.layoutMoneyShouldCome);
         layoutIHaveToPay = v.findViewById(R.id.layoutIHaveToPay);
         btnDeleteAccounts = v.findViewById(R.id.btnDeleteAccounts);
+        textBalanceMoneyShouldCome = v.findViewById(R.id.textBalanceMoneyShouldCome);
+        textBalanceIHaveToPay = v.findViewById(R.id.textBalanceIHaveToPay);
 
         btnDeleteAccounts.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,6 +67,9 @@ public class SummaryFragment extends Fragment {
         allNames.addAll(gaveMap.keySet());
         allNames.addAll(receivedMap.keySet());
 
+        int totalMoneyShouldCome = 0;
+        int totalIHaveToPay = 0;
+
         for (String name : allNames) {
             ArrayList<GivenFragment.Entry> givenList = gaveMap.getOrDefault(name, new ArrayList<>());
             ArrayList<ReceivedFragment.Entry> receivedList = receivedMap.getOrDefault(name, new ArrayList<>());
@@ -80,9 +84,11 @@ public class SummaryFragment extends Fragment {
                 if (balance > 0) {
                     layoutMoneyShouldCome.addView(
                             createAccountBox(name, totalGiven, totalPaid, balance, givenList, receivedList, false, true));
+                    totalMoneyShouldCome += balance;
                 } else if (balance < 0) {
                     layoutIHaveToPay.addView(
                             createAccountBox(name, totalPaid, totalGiven, -balance, receivedList, givenList, true, false));
+                    totalIHaveToPay += -balance;
                 } else if (balance == 0 && totalPaid > totalGiven) {
                     layoutIHaveToPay.addView(
                             createAccountBox(name, totalPaid, totalGiven, 0, receivedList, givenList, true, false));
@@ -92,10 +98,15 @@ public class SummaryFragment extends Fragment {
                 }
             }
         }
+
+        // Set total balances in curved boxes
+        if (textBalanceMoneyShouldCome != null)
+            textBalanceMoneyShouldCome.setText("₹" + totalMoneyShouldCome);
+        if (textBalanceIHaveToPay != null)
+            textBalanceIHaveToPay.setText("₹" + totalIHaveToPay);
     }
 
     private void showAccountDeleteDialog() {
-        // Collect all account names
         HashMap<String, ArrayList<GivenFragment.Entry>> gaveMap = GivenFragment.givenMap;
         HashMap<String, ArrayList<ReceivedFragment.Entry>> receivedMap = ReceivedFragment.receivedMap;
         Set<String> allNames = new LinkedHashSet<>();
@@ -108,7 +119,6 @@ public class SummaryFragment extends Fragment {
             return;
         }
 
-        // State array for checked boxes
         boolean[] checkedArr = new boolean[accountList.size()];
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Select accounts to delete");
