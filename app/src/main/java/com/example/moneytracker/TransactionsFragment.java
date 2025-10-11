@@ -20,6 +20,10 @@ public class TransactionsFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Always load latest persisted data
+        GivenFragment.loadMap(requireContext());
+        ReceivedFragment.loadMap(requireContext());
+
         View v = inflater.inflate(R.layout.fragment_transactions, container, false);
         layoutTransactions = v.findViewById(R.id.layoutTransactions);
         showAllTransactions();
@@ -33,6 +37,10 @@ public class TransactionsFragment extends Fragment {
     }
 
     private void showAllTransactions() {
+        // Always reload for latest
+        GivenFragment.loadMap(requireContext());
+        ReceivedFragment.loadMap(requireContext());
+
         layoutTransactions.removeAllViews();
 
         HashMap<String, ArrayList<GivenFragment.Entry>> gaveMap = GivenFragment.givenMap;
