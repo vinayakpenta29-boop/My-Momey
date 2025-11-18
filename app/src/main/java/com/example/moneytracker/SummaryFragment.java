@@ -27,6 +27,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 
 public class SummaryFragment extends Fragment {
 
@@ -202,7 +205,9 @@ public class SummaryFragment extends Fragment {
 
         // Heading
         TextView heading = new TextView(getContext());
-        String headingText;
+        String baseText;
+        int blueColor = 0xFF2574FF;
+        
         if (showGivenHeader) {
             headingText = "You Gived Money to " + name + " ₹" + totalPrimary;
             heading.setBackgroundColor(0xFFA0FFA0);
@@ -213,10 +218,17 @@ public class SummaryFragment extends Fragment {
             headingText = name + " ₹" + totalPrimary;
             heading.setBackgroundColor(0xFFA0FFA0);
         }
-        heading.setText(headingText);
+
+        
+        SpannableString spannable = new SpannableString(baseText);
+        if (nameStart >= 0 && nameEnd > nameStart) {
+            spannable.setSpan(new ForegroundColorSpan(blueColor),
+                nameStart, nameEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        heading.setText(spannable);
         heading.setTypeface(null, Typeface.BOLD);
         heading.setTextColor(0xFFEA4444);
-        heading.setTextSize(20);
+        heading.setTextSize(16);
         heading.setPadding(20, 16, 20, 16);
         heading.setGravity(Gravity.CENTER);
         box.addView(heading);
@@ -231,13 +243,13 @@ public class SummaryFragment extends Fragment {
                 TextView entryLeft = new TextView(getContext());
                 String leftText = entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
                 entryLeft.setText(leftText.trim());
-                entryLeft.setTextSize(16);
+                entryLeft.setTextSize(14);
                 entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 row.addView(entryLeft);
 
                 TextView entryRight = new TextView(getContext());
                 entryRight.setText(formatDate(entry.getDate()));
-                entryRight.setTextSize(16);
+                entryRight.setTextSize(14);
                 entryRight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 entryRight.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
                 row.addView(entryRight);
@@ -268,13 +280,13 @@ public class SummaryFragment extends Fragment {
                 TextView entryLeft = new TextView(getContext());
                 String leftText = entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
                 entryLeft.setText(leftText.trim());
-                entryLeft.setTextSize(16);
+                entryLeft.setTextSize(14);
                 entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 row.addView(entryLeft);
 
                 TextView entryRight = new TextView(getContext());
                 entryRight.setText(formatDate(entry.getDate()));
-                entryRight.setTextSize(16);
+                entryRight.setTextSize(14);
                 entryRight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 entryRight.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
                 row.addView(entryRight);
@@ -298,7 +310,7 @@ public class SummaryFragment extends Fragment {
         }
         paidRow.setText(paidRowText);
         paidRow.setTypeface(null, Typeface.BOLD);
-        paidRow.setTextSize(16);
+        paidRow.setTextSize(14);
         paidRow.setPadding(20, 10, 20, 10);
         paidRow.setGravity(Gravity.CENTER_VERTICAL);
         box.addView(paidRow);
