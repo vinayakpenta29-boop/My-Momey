@@ -207,19 +207,31 @@ public class SummaryFragment extends Fragment {
         TextView heading = new TextView(getContext());
         String baseText;
         int blueColor = 0xFF2574FF;
-        
+
         if (showGivenHeader) {
-            headingText = "You Gived Money to " + name + " ₹" + totalPrimary;
+            baseText = "You Gived Money to " + name + " ₹" + totalPrimary;
             heading.setBackgroundColor(0xFFA0FFA0);
         } else if (iHaveToPaySection) {
-            headingText = "You Taken from " + name + " ₹" + totalPrimary;
+            baseText = "You Taken from " + name + " ₹" + totalPrimary;
             heading.setBackgroundColor(0xFFA0D0FF);
         } else {
-            headingText = name + " ₹" + totalPrimary;
+            baseText = name + " ₹" + totalPrimary;
             heading.setBackgroundColor(0xFFA0FFA0);
         }
 
-        
+        // Blue highlight for "{Account Name} ₹{Amount}"
+        int nameStart = -1;
+        int nameEnd = -1;
+        if (showGivenHeader || iHaveToPaySection) {
+            nameStart = baseText.indexOf(name);
+            if (nameStart != -1) {
+                nameEnd = baseText.length();
+            }
+        } else {
+            nameStart = 0;
+            nameEnd = baseText.length();
+        }
+
         SpannableString spannable = new SpannableString(baseText);
         if (nameStart >= 0 && nameEnd > nameStart) {
             spannable.setSpan(new ForegroundColorSpan(blueColor),
@@ -228,7 +240,7 @@ public class SummaryFragment extends Fragment {
         heading.setText(spannable);
         heading.setTypeface(null, Typeface.BOLD);
         heading.setTextColor(0xFFEA4444);
-        heading.setTextSize(16);
+        heading.setTextSize(18);
         heading.setPadding(20, 16, 20, 16);
         heading.setGravity(Gravity.CENTER);
         box.addView(heading);
