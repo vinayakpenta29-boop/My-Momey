@@ -201,7 +201,7 @@ public class SummaryFragment extends Fragment {
         drawable.setCornerRadii(new float[]{32,32,32,32,12,12,12,12});
         drawable.setColor(0xFFF8FFF3);
         drawable.setStroke(3, 0xFFBFBFBF);
-        box.setBackground(drawable);
+        box.setBackgroundResource(R.drawable.rounded_top_corners);
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
