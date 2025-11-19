@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import java.text.ParseException;
@@ -36,6 +37,7 @@ public class SummaryFragment extends Fragment {
     private LinearLayout layoutMoneyShouldCome, layoutIHaveToPay;
     private ImageButton btnDeleteAccounts;
     private TextView textBalanceMoneyShouldCome, textBalanceIHaveToPay;
+    private Typeface alumniSansMedium;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -48,6 +50,9 @@ public class SummaryFragment extends Fragment {
         btnDeleteAccounts = v.findViewById(R.id.btnDeleteAccounts);
         textBalanceMoneyShouldCome = v.findViewById(R.id.textBalanceMoneyShouldCome);
         textBalanceIHaveToPay = v.findViewById(R.id.textBalanceIHaveToPay);
+
+        // Load custom font from res/font
+        alumniSansMedium = ResourcesCompat.getFont(requireContext(), R.font.alumnisans_medium);
 
         btnDeleteAccounts.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -203,7 +208,7 @@ public class SummaryFragment extends Fragment {
         params.setMargins(0, 24, 0, 24);
         box.setLayoutParams(params);
 
-        // Heading
+        // Heading text with custom font and blue span for Account Name + Amount
         TextView heading = new TextView(getContext());
         String baseText;
         int blueColor = 0xFF2574FF;
@@ -219,7 +224,6 @@ public class SummaryFragment extends Fragment {
             heading.setBackgroundColor(0xFFA0FFA0);
         }
 
-        // Blue highlight for "{Account Name} ₹{Amount}"
         int nameStart = -1;
         int nameEnd = -1;
         if (showGivenHeader || iHaveToPaySection) {
@@ -238,7 +242,7 @@ public class SummaryFragment extends Fragment {
                 nameStart, nameEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         heading.setText(spannable);
-        heading.setTypeface(null, Typeface.BOLD);
+        heading.setTypeface(alumniSansMedium); // custom font
         heading.setTextColor(0xFFEA4444);
         heading.setTextSize(18);
         heading.setPadding(20, 16, 20, 16);
@@ -321,7 +325,7 @@ public class SummaryFragment extends Fragment {
             paidRowText = name + " Paid ₹" + totalSecondary;
         }
         paidRow.setText(paidRowText);
-        paidRow.setTypeface(null, Typeface.BOLD);
+        paidRow.setTypeface(alumniSansMedium); // custom font here
         paidRow.setTextSize(14);
         paidRow.setPadding(20, 10, 20, 10);
         paidRow.setGravity(Gravity.CENTER_VERTICAL);
