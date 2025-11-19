@@ -244,7 +244,7 @@ public class SummaryFragment extends Fragment {
         heading.setText(spannable);
         heading.setTypeface(alumniSansMedium); // custom font
         heading.setTextColor(0xFFEA4444);
-        heading.setTextSize(18);
+        heading.setTextSize(20);
         heading.setPadding(20, 16, 20, 16);
         heading.setGravity(Gravity.CENTER);
         box.addView(heading);
@@ -259,13 +259,13 @@ public class SummaryFragment extends Fragment {
                 TextView entryLeft = new TextView(getContext());
                 String leftText = entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
                 entryLeft.setText(leftText.trim());
-                entryLeft.setTextSize(14);
+                entryLeft.setTextSize(18);
                 entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 row.addView(entryLeft);
 
                 TextView entryRight = new TextView(getContext());
                 entryRight.setText(formatDate(entry.getDate()));
-                entryRight.setTextSize(14);
+                entryRight.setTextSize(18);
                 entryRight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 entryRight.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
                 row.addView(entryRight);
