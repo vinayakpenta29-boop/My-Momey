@@ -218,7 +218,7 @@ public class SummaryFragment extends Fragment {
             heading.setBackgroundColor(0xFFA0FFA0);
         } else if (iHaveToPaySection) {
             baseText = "You Taken from " + name + " ₹" + totalPrimary;
-            heading.setBackgroundColor(0xFFA0D0FF);
+            heading.setBackgroundColor(0xFFFFC83E);
         } else {
             baseText = name + " ₹" + totalPrimary;
             heading.setBackgroundColor(0xFFA0FFA0);
