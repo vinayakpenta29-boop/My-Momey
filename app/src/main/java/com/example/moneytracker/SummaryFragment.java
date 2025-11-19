@@ -3,7 +3,6 @@ package com.example.moneytracker;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -20,14 +19,7 @@ import androidx.fragment.app.Fragment;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -41,7 +33,6 @@ public class SummaryFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Always load latest persisted data
         GivenFragment.loadMap(requireContext());
         ReceivedFragment.loadMap(requireContext());
         View v = inflater.inflate(R.layout.fragment_summary, container, false);
@@ -51,22 +42,15 @@ public class SummaryFragment extends Fragment {
         textBalanceMoneyShouldCome = v.findViewById(R.id.textBalanceMoneyShouldCome);
         textBalanceIHaveToPay = v.findViewById(R.id.textBalanceIHaveToPay);
 
-        // Load custom font from res/font
         alumniSansMedium = ResourcesCompat.getFont(requireContext(), R.font.alumnisans_medium);
 
-        btnDeleteAccounts.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showAccountDeleteDialog();
-            }
-        });
+        btnDeleteAccounts.setOnClickListener(view -> showAccountDeleteDialog());
 
         refreshView();
         return v;
     }
 
     public void refreshView() {
-        // Always reload for latest
         GivenFragment.loadMap(requireContext());
         ReceivedFragment.loadMap(requireContext());
 
@@ -88,13 +72,11 @@ public class SummaryFragment extends Fragment {
         for (String name : allNames) {
             ArrayList<GivenFragment.Entry> givenList = gaveMap.getOrDefault(name, new ArrayList<>());
             ArrayList<ReceivedFragment.Entry> receivedList = receivedMap.getOrDefault(name, new ArrayList<>());
-
             int totalGiven = 0, totalPaid = 0;
             for (EntryBase e : givenList) totalGiven += e.getAmount();
             for (EntryBase e : receivedList) totalPaid += e.getAmount();
             int balance = totalGiven - totalPaid;
             boolean hasEntries = !givenList.isEmpty() || !receivedList.isEmpty();
-
             if (hasEntries) {
                 if (balance > 0) {
                     layoutMoneyShouldCome.addView(
@@ -114,7 +96,6 @@ public class SummaryFragment extends Fragment {
             }
         }
 
-        // Set total balances in curved boxes
         if (textBalanceMoneyShouldCome != null)
             textBalanceMoneyShouldCome.setText("₹" + totalMoneyShouldCome);
         if (textBalanceIHaveToPay != null)
@@ -137,9 +118,7 @@ public class SummaryFragment extends Fragment {
         boolean[] checkedArr = new boolean[accountList.size()];
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Select accounts to delete");
-        builder.setMultiChoiceItems(accountList.toArray(new String[0]), checkedArr, new DialogInterface.OnMultiChoiceClickListener() {
-            @Override public void onClick(DialogInterface dialog, int which, boolean isChecked) { }
-        });
+        builder.setMultiChoiceItems(accountList.toArray(new String[0]), checkedArr, null);
 
         builder.setNegativeButton("Cancel", null);
 
@@ -197,52 +176,37 @@ public class SummaryFragment extends Fragment {
         LinearLayout box = new LinearLayout(getContext());
         box.setOrientation(LinearLayout.VERTICAL);
 
-        GradientDrawable drawable = new GradientDrawable();
-        drawable.setCornerRadii(new float[]{32,32,32,32,12,12,12,12});
-        drawable.setColor(0xFFF8FFF3);
-        drawable.setStroke(3, 0xFFBFBFBF);
-        box.setBackgroundResource(R.drawable.rounded_top_corners);
+        // USE ONLY THE XML DRAWABLE for rounded card
+        box.setBackgroundResource(R.drawable.account_card_bg);
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.setMargins(0, 24, 0, 24);
         box.setLayoutParams(params);
 
-        // Heading text with custom font and blue span for Account Name + Amount
+        // Tape/heading INSIDE the card, just as a colored rectangle
         TextView heading = new TextView(getContext());
         String baseText;
         int blueColor = 0xFF2574FF;
-
         if (showGivenHeader) {
             baseText = "You Gived Money to " + name + " ₹" + totalPrimary;
-            heading.setBackgroundColor(0xFFA0FFA0);
+            heading.setBackgroundColor(0xFFA0FFA0); // or setBackgroundResource for a tape drawable
         } else if (iHaveToPaySection) {
             baseText = "You Taken from " + name + " ₹" + totalPrimary;
-            heading.setBackgroundColor(0xFFFFC83E);
+            heading.setBackgroundColor(0xFFFFC83E); // or setBackgroundResource for a tape drawable
         } else {
             baseText = name + " ₹" + totalPrimary;
             heading.setBackgroundColor(0xFFA0FFA0);
         }
-
-        int nameStart = -1;
-        int nameEnd = -1;
-        if (showGivenHeader || iHaveToPaySection) {
-            nameStart = baseText.indexOf(name);
-            if (nameStart != -1) {
-                nameEnd = baseText.length();
-            }
-        } else {
-            nameStart = 0;
-            nameEnd = baseText.length();
-        }
-
+        int nameStart = (showGivenHeader || iHaveToPaySection) ? baseText.indexOf(name) : 0;
+        int nameEnd = baseText.length();
         SpannableString spannable = new SpannableString(baseText);
         if (nameStart >= 0 && nameEnd > nameStart) {
             spannable.setSpan(new ForegroundColorSpan(blueColor),
                 nameStart, nameEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         heading.setText(spannable);
-        heading.setTypeface(alumniSansMedium); // custom font
+        heading.setTypeface(alumniSansMedium);
         heading.setTextColor(0xFFEA4444);
         heading.setTextSize(22);
         heading.setPadding(20, 16, 20, 16);
@@ -325,13 +289,12 @@ public class SummaryFragment extends Fragment {
             paidRowText = name + " Paid ₹" + totalSecondary;
         }
         paidRow.setText(paidRowText);
-        paidRow.setTypeface(alumniSansMedium); // custom font here
+        paidRow.setTypeface(alumniSansMedium);
         paidRow.setTextSize(18);
         paidRow.setPadding(20, 10, 20, 10);
         paidRow.setGravity(Gravity.CENTER_VERTICAL);
         box.addView(paidRow);
 
-        // Balance or Settled
         if (balance == 0) {
             TextView settledView = new TextView(getContext());
             settledView.setText("Settled");
