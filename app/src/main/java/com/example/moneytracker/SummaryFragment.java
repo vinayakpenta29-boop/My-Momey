@@ -190,7 +190,7 @@ public class SummaryFragment extends Fragment {
         int blueColor = 0xFF2574FF;
         if (showGivenHeader) {
             baseText = "You Gived Money to " + name + " ₹" + totalPrimary;
-            heading.setBackgroundColor(0xFFFFC83E); // or setBackgroundResource for a tape drawable
+            heading.setBackgroundColor(0xFF156315); // or setBackgroundResource for a tape drawable
         } else if (iHaveToPaySection) {
             baseText = "You Taken from " + name + " ₹" + totalPrimary;
             heading.setBackgroundColor(0xFFFFC83E); // or setBackgroundResource for a tape drawable
