@@ -117,7 +117,7 @@ public class TransactionsFragment extends Fragment {
 
                 // Amount + note (white color)
                 TextView entryDetails = new TextView(getContext());
-                String details = entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
+                String details = "₹" + entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
                 entryDetails.setText(details.trim());
                 entryDetails.setTextColor(0xFFFFFFFF); // white
                 entryDetails.setTypeface(null, Typeface.BOLD);
