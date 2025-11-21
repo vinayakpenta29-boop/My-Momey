@@ -221,7 +221,7 @@ public class SummaryFragment extends Fragment {
                 row.setOrientation(LinearLayout.HORIZONTAL);
 
                 TextView entryLeft = new TextView(getContext());
-                String leftText = entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
+                String leftText = "₹" + entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
                 entryLeft.setText(leftText.trim());
                 entryLeft.setTextSize(14);
                 entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
@@ -258,7 +258,7 @@ public class SummaryFragment extends Fragment {
                 row.setOrientation(LinearLayout.HORIZONTAL);
 
                 TextView entryLeft = new TextView(getContext());
-                String leftText = entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
+                String leftText = "₹" + entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
                 entryLeft.setText(leftText.trim());
                 entryLeft.setTextSize(14);
                 entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
