@@ -99,7 +99,7 @@ public class TransactionsFragment extends Fragment {
             accountHeader.setText(name);
             accountHeader.setTypeface(null, Typeface.BOLD);
             accountHeader.setTextSize(18);
-            accountHeader.setTextColor(0xFF27AE60);
+            accountHeader.setTextColor(0xFFff2b60);
             accountHeader.setPadding(24, 24, 24, 10);
             cardBox.addView(accountHeader);
 
@@ -124,11 +124,11 @@ public class TransactionsFragment extends Fragment {
 
                 entryRow.addView(arrowView);
 
-                // Amount + note (white color)
+                // Amount + note (Dark Gray color)
                 TextView entryDetails = new TextView(getContext());
                 String details = "₹" + entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
                 entryDetails.setText(details.trim());
-                entryDetails.setTextColor(0xFFFFFFFF); // white
+                entryDetails.setTextColor(0xFF252525); // Dark Gray
                 entryDetails.setTypeface(null, Typeface.BOLD);
                 entryDetails.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 entryRow.addView(entryDetails);
