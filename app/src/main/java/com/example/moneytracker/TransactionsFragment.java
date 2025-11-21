@@ -88,7 +88,7 @@ public class TransactionsFragment extends Fragment {
         for (String name : allEntriesMap.keySet()) {
             LinearLayout cardBox = new LinearLayout(getContext());
             cardBox.setOrientation(LinearLayout.VERTICAL);
-            cardBox.setBackgroundResource(R.drawable.account_card_bg);
+            cardBox.setBackgroundResource(R.drawable.account_card_bg_for_transaction_tab);
             LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             cardParams.setMargins(0, 24, 0, 24);
