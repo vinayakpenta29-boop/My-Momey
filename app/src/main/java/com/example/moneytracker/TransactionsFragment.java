@@ -84,34 +84,43 @@ public class TransactionsFragment extends Fragment {
             }
         }
 
-        // For each account, show all its entries
+        // For each account, show all its entries inside a curved card/box
         for (String name : allEntriesMap.keySet()) {
+            LinearLayout cardBox = new LinearLayout(getContext());
+            cardBox.setOrientation(LinearLayout.VERTICAL);
+            cardBox.setBackgroundResource(R.drawable.account_card_bg);
+            LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            cardParams.setMargins(0, 24, 0, 24);
+            cardBox.setLayoutParams(cardParams);
+
+            // Account name header
             TextView accountHeader = new TextView(getContext());
             accountHeader.setText(name);
             accountHeader.setTypeface(null, Typeface.BOLD);
             accountHeader.setTextSize(18);
             accountHeader.setTextColor(0xFF27AE60);
-            accountHeader.setPadding(16, 24, 16, 10);
-            layoutTransactions.addView(accountHeader);
+            accountHeader.setPadding(24, 24, 24, 10);
+            cardBox.addView(accountHeader);
 
             ArrayList<EntryBase> entries = allEntriesMap.get(name);
 
             for (EntryBase entry : entries) {
                 LinearLayout entryRow = new LinearLayout(getContext());
                 entryRow.setOrientation(LinearLayout.HORIZONTAL);
-                entryRow.setPadding(16, 8, 16, 8);
+                entryRow.setPadding(24, 8, 24, 8);
 
-                // Arrow
+                // Arrow (just use your single vector directly, no need for circle wrapper)
                 ImageView arrowView = new ImageView(getContext());
-
-                if (entry instanceof GivenFragment.Entry) {
-                    arrowView.setImageResource(R.drawable.ic_arrow_up_red); // export
-                } else {
-                    arrowView.setImageResource(R.drawable.ic_arrow_down_green); // import
-                }
                 LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(48, 48);
                 iconParams.setMargins(0, 0, 16, 0);
                 arrowView.setLayoutParams(iconParams);
+
+                if (entry instanceof GivenFragment.Entry) {
+                    arrowView.setImageResource(R.drawable.ic_arrow_up_red); // single vector: up, white circ., red border
+                } else {
+                    arrowView.setImageResource(R.drawable.ic_arrow_down_green); // single vector: down, white circ., green border
+                }
 
                 entryRow.addView(arrowView);
 
@@ -122,22 +131,23 @@ public class TransactionsFragment extends Fragment {
                 entryDetails.setTextColor(0xFFFFFFFF); // white
                 entryDetails.setTypeface(null, Typeface.BOLD);
                 entryDetails.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-
                 entryRow.addView(entryDetails);
 
+                // Date
                 TextView entryDate = new TextView(getContext());
                 entryDate.setText(formatDate(entry.getDate()));
                 entryDate.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
                 entryDate.setTextColor(0xFFA0A0A0);
                 entryDate.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-
                 entryRow.addView(entryDate);
 
-                layoutTransactions.addView(entryRow);
+                cardBox.addView(entryRow);
 
                 // Divider
-                addDivider(layoutTransactions, 1);
+                addDivider(cardBox, 1);
             }
+
+            layoutTransactions.addView(cardBox);
         }
     }
 
