@@ -100,7 +100,7 @@ public class TransactionsFragment extends Fragment {
             accountHeader.setTypeface(null, Typeface.BOLD);
             accountHeader.setTextSize(18);
             accountHeader.setTextColor(0xFFff2b60);
-            accountHeader.setPadding(24, 24, 24, 10);
+            accountHeader.setPadding(48, 24, 48, 10);
             cardBox.addView(accountHeader);
 
             ArrayList<EntryBase> entries = allEntriesMap.get(name);
@@ -108,7 +108,7 @@ public class TransactionsFragment extends Fragment {
             for (EntryBase entry : entries) {
                 LinearLayout entryRow = new LinearLayout(getContext());
                 entryRow.setOrientation(LinearLayout.HORIZONTAL);
-                entryRow.setPadding(24, 8, 24, 8);
+                entryRow.setPadding(28, 8, 28, 8);
 
                 // Arrow (just use your single vector directly, no need for circle wrapper)
                 ImageView arrowView = new ImageView(getContext());
