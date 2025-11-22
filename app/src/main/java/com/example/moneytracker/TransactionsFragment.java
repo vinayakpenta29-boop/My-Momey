@@ -108,7 +108,7 @@ public class TransactionsFragment extends Fragment {
             for (EntryBase entry : entries) {
                 LinearLayout entryRow = new LinearLayout(getContext());
                 entryRow.setOrientation(LinearLayout.HORIZONTAL);
-                entryRow.setPadding(28, 8, 28, 8);
+                entryRow.setPadding(28, 8, 32, 8);
 
                 // Arrow (just use your single vector directly, no need for circle wrapper)
                 ImageView arrowView = new ImageView(getContext());
