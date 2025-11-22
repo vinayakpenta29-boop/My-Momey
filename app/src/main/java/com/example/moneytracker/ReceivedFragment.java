@@ -149,7 +149,6 @@ public class ReceivedFragment extends Fragment {
         if (layoutBalanceList == null) return;
         layoutBalanceList.removeAllViews();
 
-        // Use a consistent order (alphabetically)
         ArrayList<String> names = new ArrayList<>(receivedMap.keySet());
         Collections.sort(names);
 
@@ -158,22 +157,48 @@ public class ReceivedFragment extends Fragment {
             for (Entry e : receivedMap.get(name)) {
                 total += e.getAmount();
             }
-            LinearLayout row = new LinearLayout(getContext());
-            row.setOrientation(LinearLayout.HORIZONTAL);
-            row.setPadding(0, 12, 0, 12);
 
+            // Pink label on left (total received)
+            TextView totalLabel = new TextView(getContext());
+            totalLabel.setText("₹" + total);
+            totalLabel.setTextSize(14);
+            totalLabel.setTypeface(null, android.graphics.Typeface.BOLD);
+            totalLabel.setPadding(18, 4, 18, 4);
+            totalLabel.setBackgroundResource(R.drawable.balance_label_pink);
+            totalLabel.setTextColor(0xFFFFFFFF);
+            LinearLayout.LayoutParams totalParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            totalParams.setMargins(0, 0, 12, 0);
+            totalLabel.setLayoutParams(totalParams);
+
+            // Name
             TextView nameTv = new TextView(getContext());
             nameTv.setText(name);
             nameTv.setTextSize(16);
             nameTv.setTextColor(0xFF252525);
             nameTv.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-            row.addView(nameTv);
 
+            // Green label on right (current balance, could be custom logic)
             TextView balanceTv = new TextView(getContext());
             balanceTv.setText("₹" + total);
-            balanceTv.setTextSize(16);
+            balanceTv.setTextSize(14);
             balanceTv.setTypeface(null, android.graphics.Typeface.BOLD);
-            balanceTv.setTextColor(0xFF2574FF); // blue, or change as you wish
+            balanceTv.setPadding(18, 4, 18, 4);
+            balanceTv.setBackgroundResource(R.drawable.balance_label_green);
+            balanceTv.setTextColor(0xFFFFFFFF);
+            LinearLayout.LayoutParams balanceParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            balanceParams.setMargins(12, 0, 0, 0);
+            balanceTv.setLayoutParams(balanceParams);
+
+            // Row: [PinkLabel] Name [GreenLabel]
+            LinearLayout row = new LinearLayout(getContext());
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setPadding(0, 12, 0, 12);
+            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+            row.addView(totalLabel);
+            row.addView(nameTv);
             row.addView(balanceTv);
 
             layoutBalanceList.addView(row);
