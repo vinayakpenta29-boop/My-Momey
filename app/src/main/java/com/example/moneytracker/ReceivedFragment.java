@@ -149,27 +149,37 @@ public class ReceivedFragment extends Fragment {
         if (layoutBalanceList == null) return;
         layoutBalanceList.removeAllViews();
 
+        // For net balance: lookup GivenFragment.givenMap
+        HashMap<String, ArrayList<GivenFragment.Entry>> givenMap = GivenFragment.givenMap;
+
         ArrayList<String> names = new ArrayList<>(receivedMap.keySet());
         Collections.sort(names);
 
         for (String name : names) {
-            int total = 0;
+            int totalReceived = 0;
             for (Entry e : receivedMap.get(name)) {
-                total += e.getAmount();
+                totalReceived += e.getAmount();
             }
+            int totalGave = 0;
+            if (givenMap != null && givenMap.containsKey(name)) {
+                for (EntryBase e : givenMap.get(name)) {
+                    totalGave += e.getAmount();
+                }
+            }
+            int netBalance = totalGave - totalReceived; // Net balance as in summary
 
-            // Pink label on left (total received)
-            TextView totalLabel = new TextView(getContext());
-            totalLabel.setText("₹" + total);
-            totalLabel.setTextSize(14);
-            totalLabel.setTypeface(null, android.graphics.Typeface.BOLD);
-            totalLabel.setPadding(18, 4, 18, 4);
-            totalLabel.setBackgroundResource(R.drawable.balance_label_pink);
-            totalLabel.setTextColor(0xFFFFFFFF);
-            LinearLayout.LayoutParams totalParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            totalParams.setMargins(0, 0, 12, 0);
-            totalLabel.setLayoutParams(totalParams);
+            // Pink label on left (current balance)
+            TextView balanceLabel = new TextView(getContext());
+            balanceLabel.setText("₹" + netBalance);
+            balanceLabel.setTextSize(14);
+            balanceLabel.setTypeface(null, android.graphics.Typeface.BOLD);
+            balanceLabel.setPadding(18, 4, 18, 4);
+            balanceLabel.setBackgroundResource(R.drawable.balance_label_pink);
+            balanceLabel.setTextColor(0xFFFFFFFF);
+            LinearLayout.LayoutParams balanceParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            balanceParams.setMargins(0, 0, 12, 0);
+            balanceLabel.setLayoutParams(balanceParams);
 
             // Name
             TextView nameTv = new TextView(getContext());
@@ -178,18 +188,18 @@ public class ReceivedFragment extends Fragment {
             nameTv.setTextColor(0xFF252525);
             nameTv.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
-            // Green label on right (current balance, could be custom logic)
-            TextView balanceTv = new TextView(getContext());
-            balanceTv.setText("₹" + total);
-            balanceTv.setTextSize(14);
-            balanceTv.setTypeface(null, android.graphics.Typeface.BOLD);
-            balanceTv.setPadding(18, 4, 18, 4);
-            balanceTv.setBackgroundResource(R.drawable.balance_label_green);
-            balanceTv.setTextColor(0xFFFFFFFF);
-            LinearLayout.LayoutParams balanceParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            balanceParams.setMargins(12, 0, 0, 0);
-            balanceTv.setLayoutParams(balanceParams);
+            // Green label on right (total received)
+            TextView greenLabel = new TextView(getContext());
+            greenLabel.setText("₹" + totalReceived);
+            greenLabel.setTextSize(14);
+            greenLabel.setTypeface(null, android.graphics.Typeface.BOLD);
+            greenLabel.setPadding(18, 4, 18, 4);
+            greenLabel.setBackgroundResource(R.drawable.balance_label_green);
+            greenLabel.setTextColor(0xFFFFFFFF);
+            LinearLayout.LayoutParams greenParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            greenParams.setMargins(12, 0, 0, 0);
+            greenLabel.setLayoutParams(greenParams);
 
             // Row: [PinkLabel] Name [GreenLabel]
             LinearLayout row = new LinearLayout(getContext());
@@ -197,9 +207,9 @@ public class ReceivedFragment extends Fragment {
             row.setPadding(0, 12, 0, 12);
             row.setGravity(android.view.Gravity.CENTER_VERTICAL);
 
-            row.addView(totalLabel);
+            row.addView(balanceLabel);
             row.addView(nameTv);
-            row.addView(balanceTv);
+            row.addView(greenLabel);
 
             layoutBalanceList.addView(row);
         }
