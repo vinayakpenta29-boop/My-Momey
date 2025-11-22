@@ -128,7 +128,7 @@ public class TransactionsFragment extends Fragment {
                 TextView entryDetails = new TextView(getContext());
                 String details = "₹" + entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
                 entryDetails.setText(details.trim());
-                entryDetails.setTextColor(0xFF252525); // Dark Gray
+                entryDetails.setTextColor(0xFFFFFFFF); // Dark Gray
                 entryDetails.setTypeface(null, Typeface.BOLD);
                 entryDetails.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 entryRow.addView(entryDetails);
@@ -137,7 +137,7 @@ public class TransactionsFragment extends Fragment {
                 TextView entryDate = new TextView(getContext());
                 entryDate.setText(formatDate(entry.getDate()));
                 entryDate.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
-                entryDate.setTextColor(0xFFA0A0A0);
+                entryDate.setTextColor(0xFFFFFFFF);
                 entryDate.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 entryRow.addView(entryDate);
 
@@ -156,7 +156,7 @@ public class TransactionsFragment extends Fragment {
         LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, thicknessDp * 2);
         line.setLayoutParams(lineParams);
-        line.setBackgroundColor(0xFFD1D1D1);
+        line.setBackgroundColor(0xFFFFFFFF);
         layout.addView(line);
     }
 
