@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -18,15 +20,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 
 public class ReceivedFragment extends Fragment {
 
     private EditText nameInput, amountInput, noteInput;
     private Button addButton;
+    private LinearLayout layoutBalanceList;
 
     public static class Entry implements EntryBase {
         public int amount;
@@ -108,6 +108,8 @@ public class ReceivedFragment extends Fragment {
         noteInput = v.findViewById(R.id.editTextNote);
         addButton = v.findViewById(R.id.buttonAdd);
 
+        layoutBalanceList = v.findViewById(R.id.layoutBalanceList);
+
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
 
         addButton.setOnClickListener(view -> {
@@ -129,6 +131,7 @@ public class ReceivedFragment extends Fragment {
                     amountInput.setText("");
                     noteInput.setText("");
                     notifySummaryUpdate();
+                    updateBalanceList();
                 } catch (NumberFormatException e) {
                     Toast.makeText(getContext(), "Invalid amount", Toast.LENGTH_SHORT).show();
                 }
@@ -137,7 +140,44 @@ public class ReceivedFragment extends Fragment {
             }
         });
 
+        updateBalanceList(); // Show right away
+
         return v;
+    }
+
+    private void updateBalanceList() {
+        if (layoutBalanceList == null) return;
+        layoutBalanceList.removeAllViews();
+
+        // Use a consistent order (alphabetically)
+        ArrayList<String> names = new ArrayList<>(receivedMap.keySet());
+        Collections.sort(names);
+
+        for (String name : names) {
+            int total = 0;
+            for (Entry e : receivedMap.get(name)) {
+                total += e.getAmount();
+            }
+            LinearLayout row = new LinearLayout(getContext());
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setPadding(0, 12, 0, 12);
+
+            TextView nameTv = new TextView(getContext());
+            nameTv.setText(name);
+            nameTv.setTextSize(16);
+            nameTv.setTextColor(0xFF252525);
+            nameTv.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+            row.addView(nameTv);
+
+            TextView balanceTv = new TextView(getContext());
+            balanceTv.setText("₹" + total);
+            balanceTv.setTextSize(16);
+            balanceTv.setTypeface(null, android.graphics.Typeface.BOLD);
+            balanceTv.setTextColor(0xFF2574FF); // blue, or change as you wish
+            row.addView(balanceTv);
+
+            layoutBalanceList.addView(row);
+        }
     }
 
     public static void deleteAccount(Context context, String name) {
