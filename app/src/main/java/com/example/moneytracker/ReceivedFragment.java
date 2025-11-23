@@ -154,7 +154,7 @@ public class ReceivedFragment extends Fragment {
         return v;
     }
 
-    private void updateBalanceList() {
+    public void updateBalanceList() {
         if (layoutBalanceList == null) return;
         layoutBalanceList.removeAllViews();
 
