@@ -212,8 +212,29 @@ public class ReceivedFragment extends Fragment {
             row.addView(greenLabel);
 
             layoutBalanceList.addView(row);
+
+            // Add divider under row, except last row
+            if (i != names.size() - 1) {
+                addDividerWithMargin(layoutBalanceList, 1);
+            }
         }
     }
+
+    // Add divider with left/right margin so it doesn't touch curved border
+    private void addDividerWithMargin(LinearLayout layout, int thicknessDp) {
+        View line = new View(getContext());
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(thicknessDp));
+        int pxMargin = dpToPx(24); // Set your desired margin in dp
+        params.setMargins(pxMargin, 0, pxMargin, 0);
+        line.setLayoutParams(params);
+        line.setBackgroundColor(0xFFD1D1D1); // Use your divider color
+        layout.addView(line);
+    }
+
+    private int dpToPx(int dp) {
+        float density = getContext().getResources().getDisplayMetrics().density;
+        return Math.round(dp * density);
 
     public static void deleteAccount(Context context, String name) {
         receivedMap.remove(name);
