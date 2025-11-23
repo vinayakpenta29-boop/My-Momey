@@ -232,7 +232,7 @@ public class ReceivedFragment extends Fragment {
         View line = new View(getContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(thicknessDp));
-        int pxMargin = dpToPx(10); // 24dp margin, adjust as you like
+        int pxMargin = dpToPx(4); // 24dp margin, adjust as you like
         params.setMargins(pxMargin, 0, pxMargin, 0);
         line.setLayoutParams(params);
         line.setBackgroundColor(0xFFD1D1D1);
