@@ -12,13 +12,10 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.fragment.app.Fragment;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -32,7 +29,6 @@ public class GivenFragment extends Fragment {
         public int amount;
         public String note;
         public String date;
-
         public Entry(int amount, String note, String date) {
             this.amount = amount;
             this.note = note;
@@ -41,7 +37,6 @@ public class GivenFragment extends Fragment {
         @Override public int getAmount() { return amount; }
         @Override public String getNote() { return note; }
         @Override public String getDate() { return date; }
-
         public JSONObject toJSON() throws JSONException {
             JSONObject obj = new JSONObject();
             obj.put("amount", amount);
@@ -107,7 +102,6 @@ public class GivenFragment extends Fragment {
         amountInput = v.findViewById(R.id.editTextAmount);
         noteInput = v.findViewById(R.id.editTextNote);
         addButton = v.findViewById(R.id.buttonAdd);
-
         layoutBalanceList = v.findViewById(R.id.layoutBalanceList);
 
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
@@ -154,7 +148,8 @@ public class GivenFragment extends Fragment {
         ArrayList<String> names = new ArrayList<>(givenMap.keySet());
         Collections.sort(names);
 
-        for (String name : names) {
+        for (int i = 0; i < names.size(); i++) {
+            String name = names.get(i);
             int totalGave = 0;
             for (Entry e : givenMap.get(name)) {
                 totalGave += e.getAmount();
@@ -165,7 +160,7 @@ public class GivenFragment extends Fragment {
                     totalReceived += e.getAmount();
                 }
             }
-            int netBalance = totalGave - totalReceived; // Net balance as in summary
+            int netBalance = totalGave - totalReceived;
 
             // Pink label on left (current balance)
             TextView balanceLabel = new TextView(getContext());
@@ -187,7 +182,7 @@ public class GivenFragment extends Fragment {
             nameTv.setTextColor(0xFF252525);
             nameTv.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
-            // Green label on right (total gave)
+            // Green label on right
             TextView greenLabel = new TextView(getContext());
             greenLabel.setText("₹" + totalGave);
             greenLabel.setTextSize(14);
@@ -204,13 +199,34 @@ public class GivenFragment extends Fragment {
             row.setOrientation(LinearLayout.HORIZONTAL);
             row.setPadding(0, 12, 0, 12);
             row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-
             row.addView(balanceLabel);
             row.addView(nameTv);
             row.addView(greenLabel);
 
             layoutBalanceList.addView(row);
+
+            // Add divider under row, except last row
+            if (i != names.size() - 1) {
+                addDividerWithMargin(layoutBalanceList, 1);
+            }
         }
+    }
+
+    // Add divider with left/right margin so it doesn't touch curved border
+    private void addDividerWithMargin(LinearLayout layout, int thicknessDp) {
+        View line = new View(getContext());
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(thicknessDp));
+        int pxMargin = dpToPx(24); // Set your desired margin in dp
+        params.setMargins(pxMargin, 0, pxMargin, 0);
+        line.setLayoutParams(params);
+        line.setBackgroundColor(0xFFD1D1D1); // Use your divider color
+        layout.addView(line);
+    }
+
+    private int dpToPx(int dp) {
+        float density = getContext().getResources().getDisplayMetrics().density;
+        return Math.round(dp * density);
     }
 
     public static void deleteAccount(Context context, String name) {
@@ -221,8 +237,8 @@ public class GivenFragment extends Fragment {
     private void notifySummaryUpdate() {
         if (getActivity() != null) {
             SummaryFragment fragment = (SummaryFragment) getActivity()
-                    .getSupportFragmentManager()
-                    .findFragmentByTag("f2");
+                .getSupportFragmentManager()
+                .findFragmentByTag("f2");
             if (fragment != null) {
                 fragment.refreshView();
             }
