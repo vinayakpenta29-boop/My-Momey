@@ -149,13 +149,12 @@ public class ReceivedFragment extends Fragment {
         if (layoutBalanceList == null) return;
         layoutBalanceList.removeAllViews();
 
-        // For net balance: lookup GivenFragment.givenMap
         HashMap<String, ArrayList<GivenFragment.Entry>> givenMap = GivenFragment.givenMap;
-
         ArrayList<String> names = new ArrayList<>(receivedMap.keySet());
         Collections.sort(names);
 
-        for (String name : names) {
+        for (int i = 0; i < names.size(); i++) {
+            String name = names.get(i);
             int totalReceived = 0;
             for (Entry e : receivedMap.get(name)) {
                 totalReceived += e.getAmount();
@@ -166,7 +165,7 @@ public class ReceivedFragment extends Fragment {
                     totalGave += e.getAmount();
                 }
             }
-            int netBalance = totalGave - totalReceived; // Net balance as in summary
+            int netBalance = totalGave - totalReceived;
 
             // Pink label on left (current balance)
             TextView balanceLabel = new TextView(getContext());
@@ -201,7 +200,6 @@ public class ReceivedFragment extends Fragment {
             greenParams.setMargins(12, 0, 0, 0);
             greenLabel.setLayoutParams(greenParams);
 
-            // Row: [PinkLabel] Name [GreenLabel]
             LinearLayout row = new LinearLayout(getContext());
             row.setOrientation(LinearLayout.HORIZONTAL);
             row.setPadding(0, 12, 0, 12);
@@ -213,28 +211,29 @@ public class ReceivedFragment extends Fragment {
 
             layoutBalanceList.addView(row);
 
-            // Add divider under row, except last row
+            // Add divider with margin (except after last row)
             if (i != names.size() - 1) {
                 addDividerWithMargin(layoutBalanceList, 1);
             }
         }
     }
 
-    // Add divider with left/right margin so it doesn't touch curved border
+    // Divider helper with left/right margin to NOT touch border
     private void addDividerWithMargin(LinearLayout layout, int thicknessDp) {
         View line = new View(getContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(thicknessDp));
-        int pxMargin = dpToPx(24); // Set your desired margin in dp
+        int pxMargin = dpToPx(24); // 24dp margin, adjust as you like
         params.setMargins(pxMargin, 0, pxMargin, 0);
         line.setLayoutParams(params);
-        line.setBackgroundColor(0xFFD1D1D1); // Use your divider color
+        line.setBackgroundColor(0xFFD1D1D1);
         layout.addView(line);
     }
 
     private int dpToPx(int dp) {
         float density = getContext().getResources().getDisplayMetrics().density;
         return Math.round(dp * density);
+    }
 
     public static void deleteAccount(Context context, String name) {
         receivedMap.remove(name);
