@@ -99,7 +99,7 @@ public class TransactionsFragment extends Fragment {
             accountHeader.setText(name);
             accountHeader.setTypeface(null, Typeface.BOLD);
             accountHeader.setTextSize(18);
-            accountHeader.setTextColor(0xFFff2b60);
+            accountHeader.setTextColor(0xFFFFA500);
             accountHeader.setPadding(48, 24, 48, 10);
             cardBox.addView(accountHeader);
 
