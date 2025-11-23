@@ -132,6 +132,15 @@ public class ReceivedFragment extends Fragment {
                     noteInput.setText("");
                     notifySummaryUpdate();
                     updateBalanceList();
+
+                    try {
+                        GivenFragment givenFragment = (GivenFragment) getActivity()
+                            .getSupportFragmentManager()
+                            .findFragmentByTag("f0"); // Change tag if needed
+                        if (givenFragment != null) {
+                            givenFragment.updateBalanceList();
+                        }
+                    } catch (Exception ignored) {}
                 } catch (NumberFormatException e) {
                     Toast.makeText(getContext(), "Invalid amount", Toast.LENGTH_SHORT).show();
                 }
