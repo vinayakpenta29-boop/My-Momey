@@ -217,7 +217,7 @@ public class GivenFragment extends Fragment {
         View line = new View(getContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(thicknessDp));
-        int pxMargin = dpToPx(24); // Set your desired margin in dp
+        int pxMargin = dpToPx(8); // Set your desired margin in dp
         params.setMargins(pxMargin, 0, pxMargin, 0);
         line.setLayoutParams(params);
         line.setBackgroundColor(0xFFD1D1D1); // Use your divider color
