@@ -20,7 +20,6 @@ public class TransactionsFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Always load latest persisted data
         GivenFragment.loadMap(requireContext());
         ReceivedFragment.loadMap(requireContext());
 
@@ -37,7 +36,6 @@ public class TransactionsFragment extends Fragment {
     }
 
     private void showAllTransactions() {
-        // Always reload for latest
         GivenFragment.loadMap(requireContext());
         ReceivedFragment.loadMap(requireContext());
 
@@ -84,7 +82,6 @@ public class TransactionsFragment extends Fragment {
             }
         }
 
-        // For each account, show all its entries inside a curved card/box
         for (String name : allEntriesMap.keySet()) {
             LinearLayout cardBox = new LinearLayout(getContext());
             cardBox.setOrientation(LinearLayout.VERTICAL);
@@ -105,30 +102,32 @@ public class TransactionsFragment extends Fragment {
 
             ArrayList<EntryBase> entries = allEntriesMap.get(name);
 
-            for (EntryBase entry : entries) {
+            for (int i = 0; i < entries.size(); i++) {
+                EntryBase entry = entries.get(i);
+
                 LinearLayout entryRow = new LinearLayout(getContext());
                 entryRow.setOrientation(LinearLayout.HORIZONTAL);
                 entryRow.setPadding(28, 8, 32, 8);
 
-                // Arrow (just use your single vector directly, no need for circle wrapper)
+                // Arrow icon
                 ImageView arrowView = new ImageView(getContext());
                 LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(48, 48);
                 iconParams.setMargins(0, 0, 16, 0);
                 arrowView.setLayoutParams(iconParams);
 
                 if (entry instanceof GivenFragment.Entry) {
-                    arrowView.setImageResource(R.drawable.ic_arrow_up_red); // single vector: up, white circ., red border
+                    arrowView.setImageResource(R.drawable.ic_arrow_up_red);
                 } else {
-                    arrowView.setImageResource(R.drawable.ic_arrow_down_green); // single vector: down, white circ., green border
+                    arrowView.setImageResource(R.drawable.ic_arrow_down_green);
                 }
 
                 entryRow.addView(arrowView);
 
-                // Amount + note (Dark Gray color)
+                // Amount + note
                 TextView entryDetails = new TextView(getContext());
                 String details = "₹" + entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
                 entryDetails.setText(details.trim());
-                entryDetails.setTextColor(0xFFFFFFFF); // Dark Gray
+                entryDetails.setTextColor(0xFFFFFFFF); // Or a lighter/darker shade as needed
                 entryDetails.setTypeface(null, Typeface.BOLD);
                 entryDetails.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 entryRow.addView(entryDetails);
@@ -143,21 +142,33 @@ public class TransactionsFragment extends Fragment {
 
                 cardBox.addView(entryRow);
 
-                // Divider
-                addDivider(cardBox, 1);
+                // Divider (not after last row)
+                if (i != entries.size() - 1) {
+                    addDivider(cardBox, 1);
+                }
             }
 
             layoutTransactions.addView(cardBox);
         }
     }
 
+    // Divider with margin so it doesn't touch box edge
     private void addDivider(LinearLayout layout, int thicknessDp) {
         View line = new View(getContext());
         LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, thicknessDp * 2);
+        // Set left and right margin for stylish gap
+        int pxMargin = dpToPx(24); // 24dp margin, adjust as needed
+        lineParams.setMargins(pxMargin, 0, pxMargin, 0);
         line.setLayoutParams(lineParams);
-        line.setBackgroundColor(0xFFFFFFFF);
+        line.setBackgroundColor(0xFFFFFFFF); // Divider color
         layout.addView(line);
+    }
+
+    // Convert dp to px for any screen density
+    private int dpToPx(int dp) {
+        float density = getContext().getResources().getDisplayMetrics().density;
+        return Math.round((float) dp * density);
     }
 
     private String formatDate(String inputDate) {
