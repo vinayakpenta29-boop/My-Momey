@@ -126,6 +126,16 @@ public class GivenFragment extends Fragment {
                     noteInput.setText("");
                     notifySummaryUpdate();
                     updateBalanceList();
+
+                    // Refresh I Received tab's balances
+                    try {
+                        ReceivedFragment receivedFragment = (ReceivedFragment) getActivity()
+                            .getSupportFragmentManager()
+                            .findFragmentByTag("f1"); // Change tag if needed
+                        if (receivedFragment != null) {
+                            receivedFragment.updateBalanceList();
+                        }
+                    } catch (Exception ignored) {}
                 } catch (NumberFormatException e) {
                     Toast.makeText(getContext(), "Invalid amount", Toast.LENGTH_SHORT).show();
                 }
@@ -138,7 +148,7 @@ public class GivenFragment extends Fragment {
         return v;
     }
 
-    private void updateBalanceList() {
+    public void updateBalanceList() {
         if (layoutBalanceList == null) return;
         layoutBalanceList.removeAllViews();
 
@@ -212,15 +222,15 @@ public class GivenFragment extends Fragment {
         }
     }
 
-    // Add divider with left/right margin so it doesn't touch curved border
+    // Add divider with small left/right margin for near-flush look
     private void addDividerWithMargin(LinearLayout layout, int thicknessDp) {
         View line = new View(getContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(thicknessDp));
-        int pxMargin = dpToPx(8); // Set your desired margin in dp
+        int pxMargin = dpToPx(8); // 8dp gap (adjust as you prefer)
         params.setMargins(pxMargin, 0, pxMargin, 0);
         line.setLayoutParams(params);
-        line.setBackgroundColor(0xFFD1D1D1); // Use your divider color
+        line.setBackgroundColor(0xFFD1D1D1);
         layout.addView(line);
     }
 
