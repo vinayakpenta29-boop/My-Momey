@@ -158,7 +158,7 @@ public class TransactionsFragment extends Fragment {
         LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, thicknessDp * 2);
         // Set left and right margin for stylish gap
-        int pxMargin = dpToPx(24); // 24dp margin, adjust as needed
+        int pxMargin = dpToPx(10); // 24dp margin, adjust as needed
         lineParams.setMargins(pxMargin, 0, pxMargin, 0);
         line.setLayoutParams(lineParams);
         line.setBackgroundColor(0xFFFFFFFF); // Divider color
