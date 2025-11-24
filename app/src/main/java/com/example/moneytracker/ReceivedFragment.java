@@ -12,13 +12,10 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.fragment.app.Fragment;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -176,63 +173,76 @@ public class ReceivedFragment extends Fragment {
             }
             int netBalance = totalGave - totalReceived;
 
-            // Pink label on left (current balance)
-            TextView balanceLabel = new TextView(getContext());
-            balanceLabel.setText("₹" + netBalance);
-            balanceLabel.setTextSize(14);
-            balanceLabel.setTypeface(null, android.graphics.Typeface.BOLD);
-            balanceLabel.setPadding(18, 4, 18, 4);
-            balanceLabel.setBackgroundResource(R.drawable.balance_label_pink);
-            balanceLabel.setTextColor(0xFFFFFFFF);
-            LinearLayout.LayoutParams balanceParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            balanceParams.setMargins(0, 0, 12, 0);
-            balanceLabel.setLayoutParams(balanceParams);
+            LinearLayout row = new LinearLayout(getContext());
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setPadding(0, 12, 0, 12);
+            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
 
             // Name
             TextView nameTv = new TextView(getContext());
             nameTv.setText(name);
             nameTv.setTextSize(16);
             nameTv.setTextColor(0xFF252525);
-            nameTv.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+            nameTv.setTypeface(null, android.graphics.Typeface.BOLD);
+            row.addView(nameTv);
 
-            // Green label on right (total received)
+            // Green box (total received)
             TextView greenLabel = new TextView(getContext());
             greenLabel.setText("₹" + totalReceived);
             greenLabel.setTextSize(14);
             greenLabel.setTypeface(null, android.graphics.Typeface.BOLD);
-            greenLabel.setPadding(18, 4, 18, 4);
+            greenLabel.setPadding(16, 2, 16, 2);
             greenLabel.setBackgroundResource(R.drawable.balance_label_green);
             greenLabel.setTextColor(0xFFFFFFFF);
             LinearLayout.LayoutParams greenParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             greenParams.setMargins(12, 0, 0, 0);
             greenLabel.setLayoutParams(greenParams);
-
-            LinearLayout row = new LinearLayout(getContext());
-            row.setOrientation(LinearLayout.HORIZONTAL);
-            row.setPadding(0, 12, 0, 12);
-            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-
-            row.addView(balanceLabel);
-            row.addView(nameTv);
             row.addView(greenLabel);
+
+            // Spacer to push balance section to right
+            View spacer = new View(getContext());
+            LinearLayout.LayoutParams spacerParams = new LinearLayout.LayoutParams(0, 0, 1f);
+            spacer.setLayoutParams(spacerParams);
+            row.addView(spacer);
+
+            // "Balance :" in italic, light gray
+            TextView balanceText = new TextView(getContext());
+            balanceText.setText("Balance : ");
+            balanceText.setTextSize(14);
+            balanceText.setTypeface(null, android.graphics.Typeface.ITALIC);
+            balanceText.setTextColor(0xFFB0B0B0);
+            row.addView(balanceText);
+
+            // Pink box (net balance)
+            TextView balanceLabel = new TextView(getContext());
+            balanceLabel.setText("₹" + netBalance);
+            balanceLabel.setTextSize(14);
+            balanceLabel.setTypeface(null, android.graphics.Typeface.BOLD);
+            balanceLabel.setPadding(16, 2, 16, 2);
+            balanceLabel.setBackgroundResource(R.drawable.balance_label_pink);
+            balanceLabel.setTextColor(0xFFFFFFFF);
+            LinearLayout.LayoutParams pinkParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            pinkParams.setMargins(8, 0, 0, 0);
+            balanceLabel.setLayoutParams(pinkParams);
+            row.addView(balanceLabel);
 
             layoutBalanceList.addView(row);
 
-            // Add divider with margin (except after last row)
+            // Add divider under row, except last row
             if (i != names.size() - 1) {
                 addDividerWithMargin(layoutBalanceList, 1);
             }
         }
     }
 
-    // Divider helper with left/right margin to NOT touch border
+    // Divider with left/right margin for near-flush look
     private void addDividerWithMargin(LinearLayout layout, int thicknessDp) {
         View line = new View(getContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(thicknessDp));
-        int pxMargin = dpToPx(4); // 24dp margin, adjust as you like
+        int pxMargin = dpToPx(4); // for near-to-border gap
         params.setMargins(pxMargin, 0, pxMargin, 0);
         line.setLayoutParams(params);
         line.setBackgroundColor(0xFFD1D1D1);
@@ -252,8 +262,8 @@ public class ReceivedFragment extends Fragment {
     private void notifySummaryUpdate() {
         if (getActivity() != null) {
             SummaryFragment fragment = (SummaryFragment) getActivity()
-                    .getSupportFragmentManager()
-                    .findFragmentByTag("f2");
+                .getSupportFragmentManager()
+                .findFragmentByTag("f2");
             if (fragment != null) {
                 fragment.refreshView();
             }
