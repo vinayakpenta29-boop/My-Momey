@@ -1,14 +1,17 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="32dp" android:height="32dp"
     android:viewportWidth="32" android:viewportHeight="32">
-    <!-- White circle with red border (fully round) -->
-    <circle
-        android:cx="16"
-        android:cy="16"
-        android:r="14"
+    <!-- White circle with red border (true circle as path) -->
+    <path
         android:fillColor="#FFFFFFFF"
+        android:pathData="M16,2
+                          A14,14 0 1,1 15.999,2Z" />
+    <path
+        android:fillColor="@android:color/transparent"
         android:strokeColor="#FFEA4444"
-        android:strokeWidth="2"/>
+        android:strokeWidth="2"
+        android:pathData="M16,2
+                          A14,14 0 1,1 15.999,2Z" />
     <!-- Thick red up arrow -->
     <path
         android:fillColor="#FFEA4444"
