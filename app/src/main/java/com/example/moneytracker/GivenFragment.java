@@ -172,46 +172,60 @@ public class GivenFragment extends Fragment {
             }
             int netBalance = totalGave - totalReceived;
 
-            // Pink label on left (current balance)
-            TextView balanceLabel = new TextView(getContext());
-            balanceLabel.setText("₹" + netBalance);
-            balanceLabel.setTextSize(14);
-            balanceLabel.setTypeface(null, android.graphics.Typeface.BOLD);
-            balanceLabel.setPadding(18, 4, 18, 4);
-            balanceLabel.setBackgroundResource(R.drawable.balance_label_pink);
-            balanceLabel.setTextColor(0xFFFFFFFF);
-            LinearLayout.LayoutParams balanceParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            balanceParams.setMargins(0, 0, 12, 0);
-            balanceLabel.setLayoutParams(balanceParams);
+            LinearLayout row = new LinearLayout(getContext());
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setPadding(0, 12, 0, 12);
+            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
 
             // Name
             TextView nameTv = new TextView(getContext());
             nameTv.setText(name);
             nameTv.setTextSize(16);
             nameTv.setTextColor(0xFF252525);
-            nameTv.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+            nameTv.setTypeface(null, android.graphics.Typeface.BOLD);
+            row.addView(nameTv);
 
-            // Green label on right
+            // Green box (total gave)
             TextView greenLabel = new TextView(getContext());
             greenLabel.setText("₹" + totalGave);
             greenLabel.setTextSize(14);
             greenLabel.setTypeface(null, android.graphics.Typeface.BOLD);
-            greenLabel.setPadding(18, 4, 18, 4);
+            greenLabel.setPadding(16, 2, 16, 2);
             greenLabel.setBackgroundResource(R.drawable.balance_label_green);
             greenLabel.setTextColor(0xFFFFFFFF);
             LinearLayout.LayoutParams greenParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             greenParams.setMargins(12, 0, 0, 0);
             greenLabel.setLayoutParams(greenParams);
-
-            LinearLayout row = new LinearLayout(getContext());
-            row.setOrientation(LinearLayout.HORIZONTAL);
-            row.setPadding(0, 12, 0, 12);
-            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-            row.addView(balanceLabel);
-            row.addView(nameTv);
             row.addView(greenLabel);
+
+            // Spacer to push balance section to the right
+            View spacer = new View(getContext());
+            LinearLayout.LayoutParams spacerParams = new LinearLayout.LayoutParams(0, 0, 1f);
+            spacer.setLayoutParams(spacerParams);
+            row.addView(spacer);
+
+            // "Balance :" in italic, light gray
+            TextView balanceText = new TextView(getContext());
+            balanceText.setText("Balance : ");
+            balanceText.setTextSize(14);
+            balanceText.setTypeface(null, android.graphics.Typeface.ITALIC);
+            balanceText.setTextColor(0xFFB0B0B0);
+            row.addView(balanceText);
+
+            // Pink box (net balance)
+            TextView balanceLabel = new TextView(getContext());
+            balanceLabel.setText("₹" + netBalance);
+            balanceLabel.setTextSize(14);
+            balanceLabel.setTypeface(null, android.graphics.Typeface.BOLD);
+            balanceLabel.setPadding(16, 2, 16, 2);
+            balanceLabel.setBackgroundResource(R.drawable.balance_label_pink);
+            balanceLabel.setTextColor(0xFFFFFFFF);
+            LinearLayout.LayoutParams pinkParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            pinkParams.setMargins(8, 0, 0, 0);
+            balanceLabel.setLayoutParams(pinkParams);
+            row.addView(balanceLabel);
 
             layoutBalanceList.addView(row);
 
@@ -227,7 +241,7 @@ public class GivenFragment extends Fragment {
         View line = new View(getContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(thicknessDp));
-        int pxMargin = dpToPx(4); // 8dp gap (adjust as you prefer)
+        int pxMargin = dpToPx(4);
         params.setMargins(pxMargin, 0, pxMargin, 0);
         line.setLayoutParams(params);
         line.setBackgroundColor(0xFFD1D1D1);
