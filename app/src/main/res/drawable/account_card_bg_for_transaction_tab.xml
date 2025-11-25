@@ -1,9 +1,10 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#2E3147"/> <!-- or your preferred card color -->
+    <solid android:color="#fefefe"/> <!-- or your preferred card color -->
     <corners 
         android:topLeftRadius="20dp" 
         android:topRightRadius="20dp" 
         android:bottomLeftRadius="20dp"
         android:bottomRightRadius="20dp"/>
+    <stroke android:width="2dp" android:color="#e6e4e7"/>
     
 </shape>
