@@ -19,7 +19,7 @@
         android:hint="Name"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
-        android:textColor="#FFFFFF"
+        android:textColor="#5b1a9e"
         android:textColorHint="#888CA7"
         android:textSize="16sp" />
 
@@ -34,7 +34,7 @@
         android:inputType="number"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
-        android:textColor="#FFFFFF"
+        android:textColor="#5b1a9e"
         android:textColorHint="#888CA7"
         android:textSize="16sp" />
 
@@ -48,7 +48,7 @@
         android:hint="Note"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
-        android:textColor="#FFFFFF"
+        android:textColor="#5b1a9e"
         android:textColorHint="#888CA7"
         android:textSize="16sp" />
 
