@@ -136,7 +136,7 @@ public class TransactionsFragment extends Fragment {
                 TextView entryDate = new TextView(getContext());
                 entryDate.setText(formatDate(entry.getDate()));
                 entryDate.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
-                entryDate.setTextColor(0xFFe6e4e7);
+                entryDate.setTextColor(0xFF636363);
                 entryDate.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 entryRow.addView(entryDate);
 
@@ -161,7 +161,7 @@ public class TransactionsFragment extends Fragment {
         int pxMargin = dpToPx(10); // 24dp margin, adjust as needed
         lineParams.setMargins(pxMargin, 0, pxMargin, 0);
         line.setLayoutParams(lineParams);
-        line.setBackgroundColor(0xFFe6e4e7); // Divider color
+        line.setBackgroundColor(0xFF000000); // Divider color
         layout.addView(line);
     }
 
