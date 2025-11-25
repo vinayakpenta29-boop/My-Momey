@@ -181,7 +181,7 @@ public class GivenFragment extends Fragment {
             TextView nameTv = new TextView(getContext());
             nameTv.setText(name);
             nameTv.setTextSize(16);
-            nameTv.setTextColor(0xFF5b1a9e);
+            nameTv.setTextColor(0xFF000000);
             nameTv.setTypeface(null, android.graphics.Typeface.BOLD);
             row.addView(nameTv);
 
