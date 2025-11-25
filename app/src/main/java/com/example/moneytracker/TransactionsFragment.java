@@ -127,7 +127,7 @@ public class TransactionsFragment extends Fragment {
                 TextView entryDetails = new TextView(getContext());
                 String details = "₹" + entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
                 entryDetails.setText(details.trim());
-                entryDetails.setTextColor(0xFFFFFFFF); // Or a lighter/darker shade as needed
+                entryDetails.setTextColor(0xFF000000); // Or a lighter/darker shade as needed
                 entryDetails.setTypeface(null, Typeface.BOLD);
                 entryDetails.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 entryRow.addView(entryDetails);
@@ -136,7 +136,7 @@ public class TransactionsFragment extends Fragment {
                 TextView entryDate = new TextView(getContext());
                 entryDate.setText(formatDate(entry.getDate()));
                 entryDate.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
-                entryDate.setTextColor(0xFFFFFFFF);
+                entryDate.setTextColor(0xFFe6e4e7);
                 entryDate.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 entryRow.addView(entryDate);
 
@@ -161,7 +161,7 @@ public class TransactionsFragment extends Fragment {
         int pxMargin = dpToPx(10); // 24dp margin, adjust as needed
         lineParams.setMargins(pxMargin, 0, pxMargin, 0);
         line.setLayoutParams(lineParams);
-        line.setBackgroundColor(0xFFFFFFFF); // Divider color
+        line.setBackgroundColor(0xFFe6e4e7); // Divider color
         layout.addView(line);
     }
 
