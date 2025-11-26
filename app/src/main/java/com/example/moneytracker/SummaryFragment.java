@@ -72,9 +72,28 @@ public class SummaryFragment extends Fragment {
         for (String name : allNames) {
             ArrayList<GivenFragment.Entry> givenList = gaveMap.getOrDefault(name, new ArrayList<>());
             ArrayList<ReceivedFragment.Entry> receivedList = receivedMap.getOrDefault(name, new ArrayList<>());
+
+            // Only main category entries go in balance math
             int totalGiven = 0, totalPaid = 0;
-            for (EntryBase e : givenList) totalGiven += e.getAmount();
-            for (EntryBase e : receivedList) totalPaid += e.getAmount();
+            for (EntryBase e : givenList) {
+                if (e instanceof GivenFragment.Entry) {
+                    if ("Category".equals(((GivenFragment.Entry) e).category)) {
+                        totalGiven += e.getAmount();
+                    }
+                } else {
+                    totalGiven += e.getAmount();
+                }
+            }
+            for (EntryBase e : receivedList) {
+                if (e instanceof ReceivedFragment.Entry) {
+                    if ("Category".equals(((ReceivedFragment.Entry) e).category)) {
+                        totalPaid += e.getAmount();
+                    }
+                } else {
+                    totalPaid += e.getAmount();
+                }
+            }
+
             int balance = totalGiven - totalPaid;
             boolean hasEntries = !givenList.isEmpty() || !receivedList.isEmpty();
             if (hasEntries) {
@@ -175,25 +194,22 @@ public class SummaryFragment extends Fragment {
 
         LinearLayout box = new LinearLayout(getContext());
         box.setOrientation(LinearLayout.VERTICAL);
-
-        // USE ONLY THE XML DRAWABLE for rounded card
         box.setBackgroundResource(R.drawable.account_card_bg);
-
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.setMargins(0, 24, 0, 24);
         box.setLayoutParams(params);
 
-        // Tape/heading INSIDE the card, just as a colored rectangle
+        // Heading
         TextView heading = new TextView(getContext());
         String baseText;
         int blueColor = 0xFF2574FF;
         if (showGivenHeader) {
             baseText = "You Gived Money to " + name + " ₹" + totalPrimary;
-            heading.setBackgroundColor(0xFFA9EB83); // or setBackgroundResource for a tape drawable
+            heading.setBackgroundColor(0xFFA9EB83);
         } else if (iHaveToPaySection) {
             baseText = "You Taken from " + name + " ₹" + totalPrimary;
-            heading.setBackgroundColor(0xFFFFC83E); // or setBackgroundResource for a tape drawable
+            heading.setBackgroundColor(0xFFFFC83E);
         } else {
             baseText = name + " ₹" + totalPrimary;
             heading.setBackgroundColor(0xFFA0FFA0);
@@ -213,37 +229,46 @@ public class SummaryFragment extends Fragment {
         heading.setGravity(Gravity.CENTER);
         box.addView(heading);
 
-        // Entries Primary (Given or Received)
-        if (!primaryList.isEmpty()) {
-            for (int i = 0; i < primaryList.size(); i++) {
-                EntryBase entry = primaryList.get(i);
-                LinearLayout row = new LinearLayout(getContext());
-                row.setOrientation(LinearLayout.HORIZONTAL);
+        // Primary Entries (Given or Received)
+        for (int i = 0; i < primaryList.size(); i++) {
+            EntryBase entry = primaryList.get(i);
+            boolean highlightBlue = false;
+            String catValue = "Category";
+            if (entry instanceof GivenFragment.Entry) {
+                catValue = ((GivenFragment.Entry) entry).category;
+            } else if (entry instanceof ReceivedFragment.Entry) {
+                catValue = ((ReceivedFragment.Entry) entry).category;
+            }
+            if (!"Category".equals(catValue)) {
+                highlightBlue = true;
+            }
+            LinearLayout row = new LinearLayout(getContext());
+            row.setOrientation(LinearLayout.HORIZONTAL);
 
-                TextView entryLeft = new TextView(getContext());
-                String leftText = "₹" + entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
-                entryLeft.setText(leftText.trim());
-                entryLeft.setTextSize(14);
-                entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-                row.addView(entryLeft);
+            TextView entryLeft = new TextView(getContext());
+            String leftText = "₹" + entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
+            entryLeft.setText(leftText.trim());
+            entryLeft.setTextSize(14);
+            entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            if (highlightBlue) entryLeft.setTextColor(0xFF1976D2); // Blue
+            row.addView(entryLeft);
 
-                TextView entryRight = new TextView(getContext());
-                entryRight.setText(formatDate(entry.getDate()));
-                entryRight.setTextSize(14);
-                entryRight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-                entryRight.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
-                row.addView(entryRight);
+            TextView entryRight = new TextView(getContext());
+            entryRight.setText(formatDate(entry.getDate()));
+            entryRight.setTextSize(14);
+            entryRight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            entryRight.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+            if (highlightBlue) entryRight.setTextColor(0xFF1976D2); // Blue
+            row.addView(entryRight);
 
-                row.setPadding(20, 10, 20, 10);
-                box.addView(row);
+            row.setPadding(20, 10, 20, 10);
+            box.addView(row);
 
-                if (i != primaryList.size() - 1 || !secondaryList.isEmpty()) {
-                    addDivider(box, 1);
-                }
+            if (i != primaryList.size() - 1 || !secondaryList.isEmpty()) {
+                addDivider(box, 1);
             }
         }
-
-        // Entries Secondary (Paid, Given, Received)
+        // Secondary Entries
         if (!secondaryList.isEmpty()) {
             TextView paidLabel = new TextView(getContext());
             paidLabel.setText(iHaveToPaySection ? "You Gave Entries:" : "Paid Entries:");
@@ -254,6 +279,16 @@ public class SummaryFragment extends Fragment {
 
             for (int i = 0; i < secondaryList.size(); i++) {
                 EntryBase entry = secondaryList.get(i);
+                boolean highlightBlue = false;
+                String catValue = "Category";
+                if (entry instanceof GivenFragment.Entry) {
+                    catValue = ((GivenFragment.Entry) entry).category;
+                } else if (entry instanceof ReceivedFragment.Entry) {
+                    catValue = ((ReceivedFragment.Entry) entry).category;
+                }
+                if (!"Category".equals(catValue)) {
+                    highlightBlue = true;
+                }
                 LinearLayout row = new LinearLayout(getContext());
                 row.setOrientation(LinearLayout.HORIZONTAL);
 
@@ -262,6 +297,7 @@ public class SummaryFragment extends Fragment {
                 entryLeft.setText(leftText.trim());
                 entryLeft.setTextSize(14);
                 entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+                if (highlightBlue) entryLeft.setTextColor(0xFF1976D2); // Blue
                 row.addView(entryLeft);
 
                 TextView entryRight = new TextView(getContext());
@@ -269,6 +305,7 @@ public class SummaryFragment extends Fragment {
                 entryRight.setTextSize(14);
                 entryRight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 entryRight.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+                if (highlightBlue) entryRight.setTextColor(0xFF1976D2); // Blue
                 row.addView(entryRight);
 
                 row.setPadding(20, 10, 20, 10);
