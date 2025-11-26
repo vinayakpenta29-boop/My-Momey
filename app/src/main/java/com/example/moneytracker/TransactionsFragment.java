@@ -123,21 +123,32 @@ public class TransactionsFragment extends Fragment {
 
                 entryRow.addView(arrowView);
 
+                // Retrieve the category field, default "Category"
+                String catValue = "Category";
+                if (entry instanceof GivenFragment.Entry) {
+                    catValue = ((GivenFragment.Entry) entry).category;
+                } else if (entry instanceof ReceivedFragment.Entry) {
+                    catValue = ((ReceivedFragment.Entry) entry).category;
+                }
+
+                boolean highlightBlue = !"Category".equals(catValue);
+
                 // Amount + note
                 TextView entryDetails = new TextView(getContext());
                 String details = "₹" + entry.getAmount() + " " + (TextUtils.isEmpty(entry.getNote()) ? "" : entry.getNote());
                 entryDetails.setText(details.trim());
-                entryDetails.setTextColor(0xFF000000); // Or a lighter/darker shade as needed
                 entryDetails.setTypeface(null, Typeface.BOLD);
                 entryDetails.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+                entryDetails.setTextColor(highlightBlue ? 0xFF1976D2 : 0xFF000000); // blue if not "Category"
+
                 entryRow.addView(entryDetails);
 
                 // Date
                 TextView entryDate = new TextView(getContext());
                 entryDate.setText(formatDate(entry.getDate()));
                 entryDate.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
-                entryDate.setTextColor(0xFF636363);
                 entryDate.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+                entryDate.setTextColor(highlightBlue ? 0xFF1976D2 : 0xFF636363);
                 entryRow.addView(entryDate);
 
                 cardBox.addView(entryRow);
@@ -157,11 +168,10 @@ public class TransactionsFragment extends Fragment {
         View line = new View(getContext());
         LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, thicknessDp * 2);
-        // Set left and right margin for stylish gap
-        int pxMargin = dpToPx(10); // 24dp margin, adjust as needed
+        int pxMargin = dpToPx(10);
         lineParams.setMargins(pxMargin, 0, pxMargin, 0);
         line.setLayoutParams(lineParams);
-        line.setBackgroundColor(0xFF000000); // Divider color
+        line.setBackgroundColor(0xFF000000);
         layout.addView(line);
     }
 
