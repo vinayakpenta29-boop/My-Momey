@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.fragment.app.Fragment;
@@ -23,31 +25,41 @@ public class ReceivedFragment extends Fragment {
 
     private EditText nameInput, amountInput, noteInput;
     private Button addButton;
+    private RadioGroup categoryGroup;
     private LinearLayout layoutBalanceList;
 
     public static class Entry implements EntryBase {
         public int amount;
         public String note;
         public String date;
+        public String category; // new
 
-        public Entry(int amount, String note, String date) {
+        public Entry(int amount, String note, String date, String category) {
             this.amount = amount;
             this.note = note;
             this.date = date;
+            this.category = category;
         }
         @Override public int getAmount() { return amount; }
         @Override public String getNote() { return note; }
         @Override public String getDate() { return date; }
+        public String getCategory() { return category; }
 
         public JSONObject toJSON() throws JSONException {
             JSONObject obj = new JSONObject();
             obj.put("amount", amount);
             obj.put("note", note);
             obj.put("date", date);
+            obj.put("category", category);
             return obj;
         }
         public static Entry fromJSON(JSONObject obj) throws JSONException {
-            return new Entry(obj.getInt("amount"), obj.optString("note"), obj.optString("date"));
+            return new Entry(
+                obj.getInt("amount"),
+                obj.optString("note"),
+                obj.optString("date"),
+                obj.has("category") ? obj.getString("category") : "Category"
+            );
         }
     }
 
@@ -104,8 +116,8 @@ public class ReceivedFragment extends Fragment {
         amountInput = v.findViewById(R.id.editTextAmount);
         noteInput = v.findViewById(R.id.editTextNote);
         addButton = v.findViewById(R.id.buttonAdd);
-
         layoutBalanceList = v.findViewById(R.id.layoutBalanceList);
+        categoryGroup = v.findViewById(R.id.radioGroupCategory);
 
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
 
@@ -113,11 +125,20 @@ public class ReceivedFragment extends Fragment {
             String name = nameInput.getText().toString().trim();
             String amountStr = amountInput.getText().toString().trim();
             String noteStr = noteInput.getText().toString().trim();
+
+            // CATEGORY
+            int checkedId = categoryGroup.getCheckedRadioButtonId();
+            String category = "Category";
+            if (checkedId != -1) {
+                RadioButton selected = v.findViewById(checkedId);
+                category = selected.getText().toString();
+            }
+
             if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(amountStr)) {
                 try {
                     int amount = Integer.parseInt(amountStr);
                     String dateStr = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
-                    Entry entry = new Entry(amount, noteStr, dateStr);
+                    Entry entry = new Entry(amount, noteStr, dateStr, category);
                     if (!receivedMap.containsKey(name)) {
                         receivedMap.put(name, new ArrayList<>());
                     }
@@ -133,7 +154,7 @@ public class ReceivedFragment extends Fragment {
                     try {
                         GivenFragment givenFragment = (GivenFragment) getActivity()
                             .getSupportFragmentManager()
-                            .findFragmentByTag("f0"); // Change tag if needed
+                            .findFragmentByTag("f0");
                         if (givenFragment != null) {
                             givenFragment.updateBalanceList();
                         }
@@ -146,8 +167,7 @@ public class ReceivedFragment extends Fragment {
             }
         });
 
-        updateBalanceList(); // Show right away
-
+        updateBalanceList();
         return v;
     }
 
@@ -161,17 +181,24 @@ public class ReceivedFragment extends Fragment {
 
         for (int i = 0; i < names.size(); i++) {
             String name = names.get(i);
+
             int totalReceived = 0;
-            for (Entry e : receivedMap.get(name)) {
-                totalReceived += e.getAmount();
-            }
             int totalGave = 0;
+            int netBalance = 0;
+
+            // Only sum "Category" entries for main balance
+            for (Entry e : receivedMap.get(name)) {
+                if ("Category".equals(e.category)) {
+                    totalReceived += e.getAmount();
+                }
+            }
             if (givenMap != null && givenMap.containsKey(name)) {
                 for (EntryBase e : givenMap.get(name)) {
+                    // You may want to check "category" on given side too if you store it!
                     totalGave += e.getAmount();
                 }
             }
-            int netBalance = totalGave - totalReceived;
+            netBalance = totalGave - totalReceived;
 
             LinearLayout row = new LinearLayout(getContext());
             row.setOrientation(LinearLayout.HORIZONTAL);
@@ -237,12 +264,12 @@ public class ReceivedFragment extends Fragment {
         }
     }
 
-    // Divider with left/right margin for near-flush look
+    // Divider helper
     private void addDividerWithMargin(LinearLayout layout, int thicknessDp) {
         View line = new View(getContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(thicknessDp));
-        int pxMargin = dpToPx(4); // for near-to-border gap
+        int pxMargin = dpToPx(4);
         params.setMargins(pxMargin, 0, pxMargin, 0);
         line.setLayoutParams(params);
         line.setBackgroundColor(0xFFD1D1D1);
