@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.fragment.app.Fragment;
@@ -24,28 +26,41 @@ public class GivenFragment extends Fragment {
     private EditText nameInput, amountInput, noteInput;
     private Button addButton;
     private LinearLayout layoutBalanceList;
+    private RadioGroup categoryGroup;
 
     public static class Entry implements EntryBase {
         public int amount;
         public String note;
         public String date;
-        public Entry(int amount, String note, String date) {
+        public String category; // new!
+
+        public Entry(int amount, String note, String date, String category) {
             this.amount = amount;
             this.note = note;
             this.date = date;
+            this.category = category;
         }
+
         @Override public int getAmount() { return amount; }
         @Override public String getNote() { return note; }
         @Override public String getDate() { return date; }
+        public String getCategory() { return category; }
+
         public JSONObject toJSON() throws JSONException {
             JSONObject obj = new JSONObject();
             obj.put("amount", amount);
             obj.put("note", note);
             obj.put("date", date);
+            obj.put("category", category); // Add this
             return obj;
         }
         public static Entry fromJSON(JSONObject obj) throws JSONException {
-            return new Entry(obj.getInt("amount"), obj.optString("note"), obj.optString("date"));
+            return new Entry(
+                obj.getInt("amount"),
+                obj.optString("note"),
+                obj.optString("date"),
+                obj.has("category") ? obj.getString("category") : "Category"
+            );
         }
     }
 
@@ -103,6 +118,7 @@ public class GivenFragment extends Fragment {
         noteInput = v.findViewById(R.id.editTextNote);
         addButton = v.findViewById(R.id.buttonAdd);
         layoutBalanceList = v.findViewById(R.id.layoutBalanceList);
+        categoryGroup = v.findViewById(R.id.radioGroupCategory);
 
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
 
@@ -110,11 +126,20 @@ public class GivenFragment extends Fragment {
             String name = nameInput.getText().toString().trim();
             String amountStr = amountInput.getText().toString().trim();
             String noteStr = noteInput.getText().toString().trim();
+
+            // CATEGORY
+            int checkedId = categoryGroup.getCheckedRadioButtonId();
+            String category = "Category";
+            if (checkedId != -1) {
+                RadioButton selected = v.findViewById(checkedId);
+                category = selected.getText().toString();
+            }
+
             if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(amountStr)) {
                 try {
                     int amount = Integer.parseInt(amountStr);
                     String dateStr = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
-                    Entry entry = new Entry(amount, noteStr, dateStr);
+                    Entry entry = new Entry(amount, noteStr, dateStr, category);
                     if (!givenMap.containsKey(name)) {
                         givenMap.put(name, new ArrayList<>());
                     }
@@ -124,6 +149,7 @@ public class GivenFragment extends Fragment {
                     nameInput.setText("");
                     amountInput.setText("");
                     noteInput.setText("");
+                    // optionally clear category selection if you want
                     notifySummaryUpdate();
                     updateBalanceList();
 
@@ -152,25 +178,31 @@ public class GivenFragment extends Fragment {
         if (layoutBalanceList == null) return;
         layoutBalanceList.removeAllViews();
 
-        // For net balance: lookup ReceivedFragment.receivedMap
         HashMap<String, ArrayList<ReceivedFragment.Entry>> receivedMap = ReceivedFragment.receivedMap;
-
         ArrayList<String> names = new ArrayList<>(givenMap.keySet());
         Collections.sort(names);
 
         for (int i = 0; i < names.size(); i++) {
             String name = names.get(i);
+
             int totalGave = 0;
-            for (Entry e : givenMap.get(name)) {
-                totalGave += e.getAmount();
-            }
             int totalReceived = 0;
+            int netBalance = 0;
+
+            // Only sum entries with Category (main/normal) for balance
+            for (Entry e : givenMap.get(name)) {
+                if ("Category".equals(e.category)) {
+                    totalGave += e.getAmount();
+                }
+            }
+
             if (receivedMap != null && receivedMap.containsKey(name)) {
                 for (EntryBase e : receivedMap.get(name)) {
+                    // You may want to check for category too in received side if you add the field there!
                     totalReceived += e.getAmount();
                 }
             }
-            int netBalance = totalGave - totalReceived;
+            netBalance = totalGave - totalReceived;
 
             LinearLayout row = new LinearLayout(getContext());
             row.setOrientation(LinearLayout.HORIZONTAL);
@@ -185,7 +217,7 @@ public class GivenFragment extends Fragment {
             nameTv.setTypeface(null, android.graphics.Typeface.BOLD);
             row.addView(nameTv);
 
-            // Green box (total gave)
+            // Green (total gave, only normal category)
             TextView greenLabel = new TextView(getContext());
             greenLabel.setText("₹" + totalGave);
             greenLabel.setTextSize(14);
@@ -199,7 +231,7 @@ public class GivenFragment extends Fragment {
             greenLabel.setLayoutParams(greenParams);
             row.addView(greenLabel);
 
-            // Spacer to push balance section to the right
+            // Spacer
             View spacer = new View(getContext());
             LinearLayout.LayoutParams spacerParams = new LinearLayout.LayoutParams(0, 0, 1f);
             spacer.setLayoutParams(spacerParams);
@@ -213,7 +245,7 @@ public class GivenFragment extends Fragment {
             balanceText.setTextColor(0xFFB0B0B0);
             row.addView(balanceText);
 
-            // Pink box (net balance)
+            // Pink (net balance)
             TextView balanceLabel = new TextView(getContext());
             balanceLabel.setText("₹" + netBalance);
             balanceLabel.setTextSize(14);
@@ -236,7 +268,7 @@ public class GivenFragment extends Fragment {
         }
     }
 
-    // Add divider with small left/right margin for near-flush look
+    // Divider as before
     private void addDividerWithMargin(LinearLayout layout, int thicknessDp) {
         View line = new View(getContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
