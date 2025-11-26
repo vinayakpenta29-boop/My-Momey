@@ -49,6 +49,65 @@
         android:textColorHint="#888CA7"
         android:textSize="16sp" />
 
+    <!-- Curved Category Box -->
+    <LinearLayout
+        android:id="@+id/categoryBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/balance_list_bg"
+        android:padding="8dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <RadioGroup
+            android:id="@+id/radioGroupCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <RadioButton
+                android:id="@+id/radioCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Category"
+                android:checked="true"
+                android:buttonTint="#FF9800"
+                android:textColor="#FF9800"
+                android:paddingRight="8dp" />
+
+            <RadioButton
+                android:id="@+id/radioInterest"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Interest (%)"
+                android:buttonTint="#448AFF"
+                android:textColor="#448AFF"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp" />
+
+            <RadioButton
+                android:id="@+id/radioBC"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BC"
+                android:buttonTint="#7B1FA2"
+                android:textColor="#7B1FA2"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp" />
+
+            <RadioButton
+                android:id="@+id/radioEMI"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="EMI"
+                android:buttonTint="#388E3C"
+                android:textColor="#388E3C"
+                android:paddingLeft="8dp" />
+        </RadioGroup>
+    </LinearLayout>
+
     <Button
         android:id="@+id/buttonAdd"
         android:layout_width="match_parent"
