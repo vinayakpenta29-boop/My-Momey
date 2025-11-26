@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#c8dfea">
+    android:background="#f0f6fb">
 
     <!-- Delete icon at top-right -->
     <ImageButton
