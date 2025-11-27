@@ -32,7 +32,7 @@ public class GivenFragment extends Fragment {
         public int amount;
         public String note;
         public String date;
-        public String category; // new!
+        public String category;
 
         public Entry(int amount, String note, String date, String category) {
             this.amount = amount;
@@ -51,7 +51,7 @@ public class GivenFragment extends Fragment {
             obj.put("amount", amount);
             obj.put("note", note);
             obj.put("date", date);
-            obj.put("category", category); // Add this
+            obj.put("category", category);
             return obj;
         }
         public static Entry fromJSON(JSONObject obj) throws JSONException {
@@ -127,7 +127,6 @@ public class GivenFragment extends Fragment {
             String amountStr = amountInput.getText().toString().trim();
             String noteStr = noteInput.getText().toString().trim();
 
-            // CATEGORY
             int checkedId = categoryGroup.getCheckedRadioButtonId();
             String category = "Category";
             if (checkedId != -1) {
@@ -149,15 +148,13 @@ public class GivenFragment extends Fragment {
                     nameInput.setText("");
                     amountInput.setText("");
                     noteInput.setText("");
-                    // optionally clear category selection if you want
                     notifySummaryUpdate();
                     updateBalanceList();
 
-                    // Refresh I Received tab's balances
                     try {
                         ReceivedFragment receivedFragment = (ReceivedFragment) getActivity()
                             .getSupportFragmentManager()
-                            .findFragmentByTag("f1"); // Change tag if needed
+                            .findFragmentByTag("f1");
                         if (receivedFragment != null) {
                             receivedFragment.updateBalanceList();
                         }
@@ -187,22 +184,24 @@ public class GivenFragment extends Fragment {
 
             int totalGave = 0;
             int totalReceived = 0;
-            int netBalance = 0;
 
-            // Only sum entries with Category (main/normal) for balance
+            // GIVEN side: only Category
             for (GivenFragment.Entry e : givenMap.get(name)) {
                 if ("Category".equals(e.category)) {
                     totalGave += e.getAmount();
                 }
             }
 
+            // RECEIVED side: only Category (so Interest from I Received does NOT hit pink box)
             if (receivedMap != null && receivedMap.containsKey(name)) {
-                for (EntryBase e : receivedMap.get(name)) {
-                    // You may want to check for category too in received side if you add the field there!
-                    totalReceived += e.getAmount();
+                for (ReceivedFragment.Entry e : receivedMap.get(name)) {
+                    if ("Category".equals(e.category)) {
+                        totalReceived += e.getAmount();
+                    }
                 }
             }
-            netBalance = totalGave - totalReceived;
+
+            int netBalance = totalGave - totalReceived;
 
             LinearLayout row = new LinearLayout(getContext());
             row.setOrientation(LinearLayout.HORIZONTAL);
@@ -217,7 +216,7 @@ public class GivenFragment extends Fragment {
             nameTv.setTypeface(null, android.graphics.Typeface.BOLD);
             row.addView(nameTv);
 
-            // Green (total gave, only normal category)
+            // Green (total gave)
             TextView greenLabel = new TextView(getContext());
             greenLabel.setText("₹" + totalGave);
             greenLabel.setTextSize(14);
@@ -237,7 +236,7 @@ public class GivenFragment extends Fragment {
             spacer.setLayoutParams(spacerParams);
             row.addView(spacer);
 
-            // "Balance :" in italic, light gray
+            // "Balance :" label
             TextView balanceText = new TextView(getContext());
             balanceText.setText("Balance : ");
             balanceText.setTextSize(14);
@@ -261,14 +260,12 @@ public class GivenFragment extends Fragment {
 
             layoutBalanceList.addView(row);
 
-            // Add divider under row, except last row
             if (i != names.size() - 1) {
                 addDividerWithMargin(layoutBalanceList, 1);
             }
         }
     }
 
-    // Divider as before
     private void addDividerWithMargin(LinearLayout layout, int thicknessDp) {
         View line = new View(getContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
