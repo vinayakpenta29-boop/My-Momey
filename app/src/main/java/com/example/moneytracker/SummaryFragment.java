@@ -73,12 +73,13 @@ public class SummaryFragment extends Fragment {
             ArrayList<GivenFragment.Entry> givenList = gaveMap.getOrDefault(name, new ArrayList<>());
             ArrayList<ReceivedFragment.Entry> receivedList = receivedMap.getOrDefault(name, new ArrayList<>());
 
-            // Only main category entries go in balance math
+            // Only NORMAL entries (category == "") go in balance math
             int totalGiven = 0, totalPaid = 0;
             for (EntryBase e : givenList) {
                 if (e instanceof GivenFragment.Entry) {
-                    if ("Category".equals(((GivenFragment.Entry) e).category)) {
-                        totalGiven += e.getAmount();
+                    GivenFragment.Entry ge = (GivenFragment.Entry) e;
+                    if (TextUtils.isEmpty(ge.category)) {
+                        totalGiven += ge.getAmount();
                     }
                 } else {
                     totalGiven += e.getAmount();
@@ -86,8 +87,9 @@ public class SummaryFragment extends Fragment {
             }
             for (EntryBase e : receivedList) {
                 if (e instanceof ReceivedFragment.Entry) {
-                    if ("Category".equals(((ReceivedFragment.Entry) e).category)) {
-                        totalPaid += e.getAmount();
+                    ReceivedFragment.Entry re = (ReceivedFragment.Entry) e;
+                    if (TextUtils.isEmpty(re.category)) {
+                        totalPaid += re.getAmount();
                     }
                 } else {
                     totalPaid += e.getAmount();
@@ -233,13 +235,13 @@ public class SummaryFragment extends Fragment {
         for (int i = 0; i < primaryList.size(); i++) {
             EntryBase entry = primaryList.get(i);
             boolean highlightBlue = false;
-            String catValue = "Category";
+            String catValue = "";
             if (entry instanceof GivenFragment.Entry) {
                 catValue = ((GivenFragment.Entry) entry).category;
             } else if (entry instanceof ReceivedFragment.Entry) {
                 catValue = ((ReceivedFragment.Entry) entry).category;
             }
-            if (!"Category".equals(catValue)) {
+            if (!TextUtils.isEmpty(catValue)) {
                 highlightBlue = true;
             }
             LinearLayout row = new LinearLayout(getContext());
@@ -250,7 +252,7 @@ public class SummaryFragment extends Fragment {
             entryLeft.setText(leftText.trim());
             entryLeft.setTextSize(14);
             entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-            if (highlightBlue) entryLeft.setTextColor(0xFF1976D2); // Blue
+            if (highlightBlue) entryLeft.setTextColor(0xFF1976D2); // Blue for Interest/EMI/BC
             row.addView(entryLeft);
 
             TextView entryRight = new TextView(getContext());
@@ -258,7 +260,7 @@ public class SummaryFragment extends Fragment {
             entryRight.setTextSize(14);
             entryRight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
             entryRight.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
-            if (highlightBlue) entryRight.setTextColor(0xFF1976D2); // Blue
+            if (highlightBlue) entryRight.setTextColor(0xFF1976D2);
             row.addView(entryRight);
 
             row.setPadding(20, 10, 20, 10);
@@ -268,6 +270,7 @@ public class SummaryFragment extends Fragment {
                 addDivider(box, 1);
             }
         }
+
         // Secondary Entries
         if (!secondaryList.isEmpty()) {
             TextView paidLabel = new TextView(getContext());
@@ -280,13 +283,13 @@ public class SummaryFragment extends Fragment {
             for (int i = 0; i < secondaryList.size(); i++) {
                 EntryBase entry = secondaryList.get(i);
                 boolean highlightBlue = false;
-                String catValue = "Category";
+                String catValue = "";
                 if (entry instanceof GivenFragment.Entry) {
                     catValue = ((GivenFragment.Entry) entry).category;
                 } else if (entry instanceof ReceivedFragment.Entry) {
                     catValue = ((ReceivedFragment.Entry) entry).category;
                 }
-                if (!"Category".equals(catValue)) {
+                if (!TextUtils.isEmpty(catValue)) {
                     highlightBlue = true;
                 }
                 LinearLayout row = new LinearLayout(getContext());
@@ -297,7 +300,7 @@ public class SummaryFragment extends Fragment {
                 entryLeft.setText(leftText.trim());
                 entryLeft.setTextSize(14);
                 entryLeft.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-                if (highlightBlue) entryLeft.setTextColor(0xFF1976D2); // Blue
+                if (highlightBlue) entryLeft.setTextColor(0xFF1976D2);
                 row.addView(entryLeft);
 
                 TextView entryRight = new TextView(getContext());
@@ -305,7 +308,7 @@ public class SummaryFragment extends Fragment {
                 entryRight.setTextSize(14);
                 entryRight.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
                 entryRight.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
-                if (highlightBlue) entryRight.setTextColor(0xFF1976D2); // Blue
+                if (highlightBlue) entryRight.setTextColor(0xFF1976D2);
                 row.addView(entryRight);
 
                 row.setPadding(20, 10, 20, 10);
