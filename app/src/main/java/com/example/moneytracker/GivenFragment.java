@@ -190,7 +190,7 @@ public class GivenFragment extends Fragment {
             int netBalance = 0;
 
             // Only sum entries with Category (main/normal) for balance
-            for (Entry e : givenMap.get(name)) {
+            for (GivenFragment.Entry e : givenMap.get(name)) {
                 if ("Category".equals(e.category)) {
                     totalGave += e.getAmount();
                 }
