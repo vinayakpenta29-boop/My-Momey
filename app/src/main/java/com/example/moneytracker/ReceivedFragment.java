@@ -32,7 +32,7 @@ public class ReceivedFragment extends Fragment {
         public int amount;
         public String note;
         public String date;
-        public String category;
+        public String category;   // "", "Interest", "EMI", "BC"
 
         public Entry(int amount, String note, String date, String category) {
             this.amount = amount;
@@ -58,7 +58,7 @@ public class ReceivedFragment extends Fragment {
                 obj.getInt("amount"),
                 obj.optString("note"),
                 obj.optString("date"),
-                obj.has("category") ? obj.getString("category") : "Category"
+                obj.has("category") ? obj.getString("category") : ""   // old data = normal
             );
         }
     }
@@ -126,11 +126,12 @@ public class ReceivedFragment extends Fragment {
             String amountStr = amountInput.getText().toString().trim();
             String noteStr = noteInput.getText().toString().trim();
 
+            // No default; empty = normal
             int checkedId = categoryGroup.getCheckedRadioButtonId();
-            String category = "Category";
+            String category = "";
             if (checkedId != -1) {
                 RadioButton selected = v.findViewById(checkedId);
-                category = selected.getText().toString();
+                category = selected.getText().toString();   // "Interest", "EMI", "BC"
             }
 
             if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(amountStr)) {
@@ -184,17 +185,17 @@ public class ReceivedFragment extends Fragment {
             int totalReceived = 0;
             int totalGave = 0;
 
-            // RECEIVED side: only Category
+            // RECEIVED side: only normal entries (category == "")
             for (ReceivedFragment.Entry e : receivedMap.get(name)) {
-                if ("Category".equals(e.category)) {
+                if (TextUtils.isEmpty(e.category)) {
                     totalReceived += e.getAmount();
                 }
             }
 
-            // GIVEN side: only Category (so Interest from I Gave does NOT hit this pink box)
+            // GIVEN side: only normal entries
             if (givenMap != null && givenMap.containsKey(name)) {
                 for (GivenFragment.Entry e : givenMap.get(name)) {
-                    if ("Category".equals(e.category)) {
+                    if (TextUtils.isEmpty(e.category)) {
                         totalGave += e.getAmount();
                     }
                 }
