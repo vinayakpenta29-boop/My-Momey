@@ -9,9 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.fragment.app.Fragment;
@@ -32,7 +32,7 @@ public class ReceivedFragment extends Fragment {
         public int amount;
         public String note;
         public String date;
-        public String category; // new
+        public String category;
 
         public Entry(int amount, String note, String date, String category) {
             this.amount = amount;
@@ -126,7 +126,6 @@ public class ReceivedFragment extends Fragment {
             String amountStr = amountInput.getText().toString().trim();
             String noteStr = noteInput.getText().toString().trim();
 
-            // CATEGORY
             int checkedId = categoryGroup.getCheckedRadioButtonId();
             String category = "Category";
             if (checkedId != -1) {
@@ -184,21 +183,24 @@ public class ReceivedFragment extends Fragment {
 
             int totalReceived = 0;
             int totalGave = 0;
-            int netBalance = 0;
 
-            // Only sum "Category" entries for main balance
-            for (Entry e : receivedMap.get(name)) {
+            // RECEIVED side: only Category
+            for (ReceivedFragment.Entry e : receivedMap.get(name)) {
                 if ("Category".equals(e.category)) {
                     totalReceived += e.getAmount();
                 }
             }
+
+            // GIVEN side: only Category (so Interest from I Gave does NOT hit this pink box)
             if (givenMap != null && givenMap.containsKey(name)) {
-                for (ReceivedFragment.Entry e : receivedMap.get(name)) {
-                    // You may want to check "category" on given side too if you store it!
-                    totalGave += e.getAmount();
+                for (GivenFragment.Entry e : givenMap.get(name)) {
+                    if ("Category".equals(e.category)) {
+                        totalGave += e.getAmount();
+                    }
                 }
             }
-            netBalance = totalGave - totalReceived;
+
+            int netBalance = totalGave - totalReceived;
 
             LinearLayout row = new LinearLayout(getContext());
             row.setOrientation(LinearLayout.HORIZONTAL);
@@ -233,7 +235,7 @@ public class ReceivedFragment extends Fragment {
             spacer.setLayoutParams(spacerParams);
             row.addView(spacer);
 
-            // "Balance :" in italic, light gray
+            // "Balance :" label
             TextView balanceText = new TextView(getContext());
             balanceText.setText("Balance : ");
             balanceText.setTextSize(14);
@@ -257,14 +259,12 @@ public class ReceivedFragment extends Fragment {
 
             layoutBalanceList.addView(row);
 
-            // Add divider under row, except last row
             if (i != names.size() - 1) {
                 addDividerWithMargin(layoutBalanceList, 1);
             }
         }
     }
 
-    // Divider helper
     private void addDividerWithMargin(LinearLayout layout, int thicknessDp) {
         View line = new View(getContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
