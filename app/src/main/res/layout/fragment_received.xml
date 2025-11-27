@@ -68,16 +68,6 @@
             android:gravity="center">
 
             <RadioButton
-                android:id="@+id/radioCategory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Category"
-                android:checked="true"
-                android:buttonTint="#FF9800"
-                android:textColor="#FF9800"
-                android:paddingRight="8dp" />
-
-            <RadioButton
                 android:id="@+id/radioInterest"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
