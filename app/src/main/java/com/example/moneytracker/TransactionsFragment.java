@@ -123,15 +123,15 @@ public class TransactionsFragment extends Fragment {
 
                 entryRow.addView(arrowView);
 
-                // Retrieve the category field, default "Category"
-                String catValue = "Category";
+                // Retrieve the category field, empty = normal, non-empty = special
+                String catValue = "";
                 if (entry instanceof GivenFragment.Entry) {
                     catValue = ((GivenFragment.Entry) entry).category;
                 } else if (entry instanceof ReceivedFragment.Entry) {
                     catValue = ((ReceivedFragment.Entry) entry).category;
                 }
 
-                boolean highlightBlue = !"Category".equals(catValue);
+                boolean highlightBlue = !TextUtils.isEmpty(catValue); // Interest/EMI/BC
 
                 // Amount + note
                 TextView entryDetails = new TextView(getContext());
@@ -139,7 +139,7 @@ public class TransactionsFragment extends Fragment {
                 entryDetails.setText(details.trim());
                 entryDetails.setTypeface(null, Typeface.BOLD);
                 entryDetails.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-                entryDetails.setTextColor(highlightBlue ? 0xFF1976D2 : 0xFF000000); // blue if not "Category"
+                entryDetails.setTextColor(highlightBlue ? 0xFF1976D2 : 0xFF000000);
 
                 entryRow.addView(entryDetails);
 
