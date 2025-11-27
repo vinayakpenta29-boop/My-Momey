@@ -32,7 +32,7 @@ public class GivenFragment extends Fragment {
         public int amount;
         public String note;
         public String date;
-        public String category;
+        public String category;   // "", "Interest", "EMI", "BC"
 
         public Entry(int amount, String note, String date, String category) {
             this.amount = amount;
@@ -51,7 +51,7 @@ public class GivenFragment extends Fragment {
             obj.put("amount", amount);
             obj.put("note", note);
             obj.put("date", date);
-            obj.put("category", category);
+            obj.put("category", category);   // may be empty string
             return obj;
         }
         public static Entry fromJSON(JSONObject obj) throws JSONException {
@@ -59,7 +59,7 @@ public class GivenFragment extends Fragment {
                 obj.getInt("amount"),
                 obj.optString("note"),
                 obj.optString("date"),
-                obj.has("category") ? obj.getString("category") : "Category"
+                obj.has("category") ? obj.getString("category") : ""   // old data = normal
             );
         }
     }
@@ -127,11 +127,12 @@ public class GivenFragment extends Fragment {
             String amountStr = amountInput.getText().toString().trim();
             String noteStr = noteInput.getText().toString().trim();
 
+            // No default; empty string means normal entry
             int checkedId = categoryGroup.getCheckedRadioButtonId();
-            String category = "Category";
+            String category = "";
             if (checkedId != -1) {
                 RadioButton selected = v.findViewById(checkedId);
-                category = selected.getText().toString();
+                category = selected.getText().toString();  // "Interest", "EMI", "BC"
             }
 
             if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(amountStr)) {
@@ -148,6 +149,7 @@ public class GivenFragment extends Fragment {
                     nameInput.setText("");
                     amountInput.setText("");
                     noteInput.setText("");
+                    // do not change radio selection; user chooses each time
                     notifySummaryUpdate();
                     updateBalanceList();
 
@@ -185,17 +187,17 @@ public class GivenFragment extends Fragment {
             int totalGave = 0;
             int totalReceived = 0;
 
-            // GIVEN side: only Category
+            // GIVEN side: only normal entries (category == "")
             for (GivenFragment.Entry e : givenMap.get(name)) {
-                if ("Category".equals(e.category)) {
+                if (TextUtils.isEmpty(e.category)) {
                     totalGave += e.getAmount();
                 }
             }
 
-            // RECEIVED side: only Category (so Interest from I Received does NOT hit pink box)
+            // RECEIVED side: only normal entries
             if (receivedMap != null && receivedMap.containsKey(name)) {
                 for (ReceivedFragment.Entry e : receivedMap.get(name)) {
-                    if ("Category".equals(e.category)) {
+                    if (TextUtils.isEmpty(e.category)) {
                         totalReceived += e.getAmount();
                     }
                 }
