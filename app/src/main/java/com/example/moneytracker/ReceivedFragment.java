@@ -193,7 +193,7 @@ public class ReceivedFragment extends Fragment {
                 }
             }
             if (givenMap != null && givenMap.containsKey(name)) {
-                for (EntryBase e : givenMap.get(name)) {
+                for (ReceivedFragment.Entry e : receivedMap.get(name)) {
                     // You may want to check "category" on given side too if you store it!
                     totalGave += e.getAmount();
                 }
