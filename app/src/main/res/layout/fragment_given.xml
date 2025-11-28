@@ -9,6 +9,24 @@
     android:paddingLeft="16dp"
     android:paddingRight="16dp">
 
+    <!-- Top bar with global BC three-dots menu -->
+    <LinearLayout
+        android:id="@+id/topBarGiven"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="right|center_vertical"
+        android:paddingBottom="4dp">
+
+        <ImageButton
+            android:id="@+id/btnMoreTopGiven"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_more_vert"   <!-- your 3-dots icon -->
+            android:contentDescription="More BC options" />
+    </LinearLayout>
+
     <EditText
         android:id="@+id/editTextName"
         android:layout_width="match_parent"
@@ -114,7 +132,6 @@
         android:textStyle="bold"
         android:textSize="18sp" />
     
-    <!-- Curved box for names and balances -->
     <LinearLayout
         android:id="@+id/layoutBalanceList"
         android:layout_width="match_parent"
