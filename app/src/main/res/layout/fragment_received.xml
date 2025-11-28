@@ -8,7 +8,7 @@
 
     <!-- Top bar with global BC three-dots menu -->
     <LinearLayout
-        android:id="@+id/topBarGiven"
+        android:id="@+id/topBarReceived"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -16,7 +16,7 @@
         android:paddingBottom="4dp">
 
         <ImageButton
-            android:id="@+id/btnMoreTopGiven"
+            android:id="@+id/btnMoreTopReceived"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:background="@android:color/transparent"
