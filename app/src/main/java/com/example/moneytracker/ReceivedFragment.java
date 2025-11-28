@@ -220,11 +220,173 @@ public class ReceivedFragment extends Fragment {
         menu.getMenu().add("BC ("Add BC");
         menu.getMenu().add("view BC List");
         menu.setOnMenuItemClickListener(item -> {
-            Toast.makeText(getContext(), "BC menu: " + item.getTitle(), Toast.LENGTH_SHORT).show();
+            String title = item.getTitle().toString();
+            if ("Add BC".equals(title)) {
+                showAddBcDialog();
+            } else if ("View BC List".equals(title)) {
+                showBcListDialog();
+            }
             return true;
         });
         menu.show();
     }
+
+    // STEP 4: dialog to create a new BC scheme
+    private void showAddBcDialog() {
+        LinearLayout root = new LinearLayout(getContext());
+        root.setOrientation(LinearLayout.VERTICAL);
+        int pad = dpToPx(16);
+        root.setPadding(pad, pad, pad, pad);
+
+        EditText etAccount = new EditText(getContext());
+        etAccount.setHint("Account Name (optional)");
+        root.addView(etAccount);
+
+        EditText etBcName = new EditText(getContext());
+        etBcName.setHint("BC Name");
+        root.addView(etBcName);
+
+        EditText etMonths = new EditText(getContext());
+        etMonths.setHint("Months");
+        etMonths.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        root.addView(etMonths);
+
+        EditText etStartDate = new EditText(getContext());
+        etStartDate.setHint("Start / Due Date (dd/MM/yyyy)");
+        etStartDate.setFocusable(false);
+        etStartDate.setOnClickListener(v -> {
+            Calendar c = Calendar.getInstance();
+            DatePickerDialog dp = new DatePickerDialog(
+                    getContext(),
+                    (DatePicker view, int year, int month, int dayOfMonth) -> {
+                        String d = String.format(Locale.getDefault(),
+                                "%02d/%02d/%04d", dayOfMonth, month + 1, year);
+                        etStartDate.setText(d);
+                    },
+                    c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+            dp.show();
+        });
+        root.addView(etStartDate);
+
+        new android.app.AlertDialog.Builder(getContext())
+                .setTitle("Add BC Scheme")
+                .setView(root)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Add", (d, w) -> {
+                    String accountName = etAccount.getText().toString().trim();
+                    String bcName = etBcName.getText().toString().trim();
+                    String monthsStr = etMonths.getText().toString().trim();
+                    String startDate = etStartDate.getText().toString().trim();
+
+                    if (TextUtils.isEmpty(bcName) ||
+                            TextUtils.isEmpty(monthsStr) ||
+                            TextUtils.isEmpty(startDate)) {
+                        Toast.makeText(getContext(),
+                                "BC Name, Months and Start Date are required",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int months;
+                    try {
+                        months = Integer.parseInt(monthsStr);
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(getContext(), "Invalid months", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    BcScheme scheme = new BcScheme();
+                    scheme.name = bcName;
+                    scheme.months = months;
+                    scheme.startDate = startDate;
+                    generateBcSchedule(scheme);  // fill scheduleDates
+
+                    String key = TextUtils.isEmpty(accountName) ? "_GLOBAL_" : accountName;
+                    ArrayList<BcScheme> list = bcMap.get(key);
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        bcMap.put(key, list);
+                    }
+                    list.add(scheme);
+
+                    Toast.makeText(getContext(), "BC added", Toast.LENGTH_SHORT).show();
+                })
+                .show();
+    }
+
+    // STEP 4: create monthly schedule dates for a BC scheme
+    private void generateBcSchedule(BcScheme scheme) {
+        scheme.scheduleDates.clear();
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        Calendar c = Calendar.getInstance();
+        try {
+            c.setTime(df.parse(scheme.startDate));
+        } catch (ParseException e) {
+            return;
+        }
+        for (int i = 0; i < scheme.months; i++) {
+            scheme.scheduleDates.add(df.format(c.getTime()));
+            c.add(Calendar.MONTH, 1);
+        }
+    }
+
+    // STEP 4: list all BC schemes and open details
+    private void showBcListDialog() {
+        if (bcMap.isEmpty()) {
+            Toast.makeText(getContext(), "No BC schemes added", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Flatten map into labels and references
+        List<String> labels = new ArrayList<>();
+        List<BcScheme> schemes = new ArrayList<>();
+        for (String key : bcMap.keySet()) {
+            ArrayList<BcScheme> list = bcMap.get(key);
+            if (list == null) continue;
+            for (BcScheme s : list) {
+                String label = (key.equals("_GLOBAL_") ? "" : key + " - ") + s.name;
+                labels.add(label);
+                schemes.add(s);
+            }
+        }
+        if (labels.isEmpty()) {
+            Toast.makeText(getContext(), "No BC schemes added", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        new android.app.AlertDialog.Builder(getContext())
+                .setTitle("BC Schemes")
+                .setItems(labels.toArray(new String[0]), (d, which) -> {
+                    BcScheme s = schemes.get(which);
+                    showBcDetailsDialog(s);
+                })
+                .setNegativeButton("Close", null)
+                .show();
+    }
+
+    // STEP 4: show one BC scheme with its schedule dates (checkbox-like list, not persisted)
+    private void showBcDetailsDialog(BcScheme scheme) {
+        ScrollView scrollView = new ScrollView(getContext());
+        LinearLayout container = new LinearLayout(getContext());
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8));
+        scrollView.addView(container);
+
+        for (String date : scheme.scheduleDates) {
+            TextView tv = new TextView(getContext());
+            tv.setText("□ " + date);  // visual checkbox (no state persistence yet)
+            tv.setTextSize(14);
+            tv.setPadding(0, dpToPx(4), 0, dpToPx(4));
+            container.addView(tv);
+        }
+
+        new android.app.AlertDialog.Builder(getContext())
+                .setTitle("BC: " + scheme.name)
+                .setView(scrollView)
+                .setPositiveButton("Close", null)
+                .show();
+    }
+
 
     public void updateBalanceList() {
         if (layoutBalanceList == null) return;
