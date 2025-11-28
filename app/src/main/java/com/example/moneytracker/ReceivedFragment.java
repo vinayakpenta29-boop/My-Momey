@@ -121,6 +121,22 @@ public class ReceivedFragment extends Fragment {
 
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
 
+                // Make RadioGroup togglable: tap again to unselect
+        categoryGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            private int lastCheckedId = -1;
+
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if (checkedId == -1) return;
+                if (checkedId == lastCheckedId) {
+                    group.clearCheck();      // unselect when tapping same option
+                    lastCheckedId = -1;
+                } else {
+                    lastCheckedId = checkedId;
+                }
+            }
+        });
+
         addButton.setOnClickListener(view -> {
             String name = nameInput.getText().toString().trim();
             String amountStr = amountInput.getText().toString().trim();
@@ -148,6 +164,7 @@ public class ReceivedFragment extends Fragment {
                     nameInput.setText("");
                     amountInput.setText("");
                     noteInput.setText("");
+                    categoryGroup.clearCheck(),
                     notifySummaryUpdate();
                     updateBalanceList();
 
