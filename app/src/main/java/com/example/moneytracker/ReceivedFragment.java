@@ -1,5 +1,6 @@
 package com.example.moneytracker;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.app.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -25,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -75,6 +78,15 @@ public class ReceivedFragment extends Fragment {
 
     private static final String PREFS_NAME = "MoneyTrackerPrefs";
     private static final String RECEIVED_KEY = "received_data";
+
+    private static class Bcscheme {
+        String name;
+        int months;
+        String startDate;
+        List<String> scheduleDates = new ArrayList<>();
+    }
+
+    private static final HashMap<String, ArrayList<BcScheme>> bcMap new HashMap<>();
 
     public static void saveMap(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -132,7 +144,7 @@ public class ReceivedFragment extends Fragment {
 
         // Top-right BC three-dots menu (placeholder for now)
         if (btnMoreTopReceived != null) {
-            btnMoreTopReceived.setOnClickListener(view -> showBcMenu(view));
+            btnMoreTopReceived.setOnClickListener(this::showBcManagerMenu);
         }
 
         // Make RadioGroup togglable: tap again to unselect
@@ -205,7 +217,8 @@ public class ReceivedFragment extends Fragment {
     // Placeholder BC menu
     private void showBcMenu(View anchor) {
         PopupMenu menu = new PopupMenu(getContext(), anchor);
-        menu.getMenu().add("BC (coming soon)");
+        menu.getMenu().add("BC ("Add BC");
+        menu.getMenu().add("view BC List");
         menu.setOnMenuItemClickListener(item -> {
             Toast.makeText(getContext(), "BC menu: " + item.getTitle(), Toast.LENGTH_SHORT).show();
             return true;
