@@ -1,5 +1,6 @@
 package com.example.moneytracker;
 
+import android.app.DatePickerDialog;              // STEP 4
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.DatePicker;                 // STEP 4
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -15,7 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.ScrollView;          // STEP 3: added for scrollable dialog content
+import android.widget.ScrollView;                // STEP 3
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;                 // STEP 4
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -77,6 +80,17 @@ public class GivenFragment extends Fragment {
     private static final String PREFS_NAME = "MoneyTrackerPrefs";
     private static final String GIVEN_KEY = "given_data";
 
+    // STEP 4: simple BC data stored per account name
+    // For now, all BCs are global (not persisted), kept only in memory.
+    private static class BcScheme {
+        String name;
+        int months;
+        String startDate; // dd/MM/yyyy
+        List<String> scheduleDates = new ArrayList<>();
+    }
+    // accountName -> list of BC schemes
+    private static final HashMap<String, ArrayList<BcScheme>> bcMap = new HashMap<>(); // STEP 4
+
     public static void saveMap(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         JSONObject root = new JSONObject();
@@ -115,6 +129,7 @@ public class GivenFragment extends Fragment {
                 e.printStackTrace();
             }
         }
+        // STEP 4: bcMap is in‑memory only in this simple manager (no persistence yet)
     }
 
     @Override
@@ -131,9 +146,9 @@ public class GivenFragment extends Fragment {
 
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
 
-        // Top-right BC three-dots menu (still placeholder)
+        // STEP 4: Top-right BC three-dots menu now opens BC Manager
         if (btnMoreTopGiven != null) {
-            btnMoreTopGiven.setOnClickListener(view -> showBcMenu(view));
+            btnMoreTopGiven.setOnClickListener(this::showBcManagerMenu);
         }
 
         // Make RadioGroup togglable: tap again to unselect
@@ -203,15 +218,177 @@ public class GivenFragment extends Fragment {
         return v;
     }
 
-    // Top-right BC menu (placeholder)
-    private void showBcMenu(View anchor) {
+    // STEP 4: BC Manager main menu (top-right three dots)
+    private void showBcManagerMenu(View anchor) {
         PopupMenu menu = new PopupMenu(getContext(), anchor);
-        menu.getMenu().add("BC (coming soon)");
+        menu.getMenu().add("Add BC");
+        menu.getMenu().add("View BC List");
         menu.setOnMenuItemClickListener(item -> {
-            Toast.makeText(getContext(), "BC menu: " + item.getTitle(), Toast.LENGTH_SHORT).show();
+            String title = item.getTitle().toString();
+            if ("Add BC".equals(title)) {
+                showAddBcDialog();
+            } else if ("View BC List".equals(title)) {
+                showBcListDialog();
+            }
             return true;
         });
         menu.show();
+    }
+
+    // STEP 4: dialog to create a new BC scheme
+    private void showAddBcDialog() {
+        LinearLayout root = new LinearLayout(getContext());
+        root.setOrientation(LinearLayout.VERTICAL);
+        int pad = dpToPx(16);
+        root.setPadding(pad, pad, pad, pad);
+
+        EditText etAccount = new EditText(getContext());
+        etAccount.setHint("Account Name (optional)");
+        root.addView(etAccount);
+
+        EditText etBcName = new EditText(getContext());
+        etBcName.setHint("BC Name");
+        root.addView(etBcName);
+
+        EditText etMonths = new EditText(getContext());
+        etMonths.setHint("Months");
+        etMonths.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        root.addView(etMonths);
+
+        EditText etStartDate = new EditText(getContext());
+        etStartDate.setHint("Start / Due Date (dd/MM/yyyy)");
+        etStartDate.setFocusable(false);
+        etStartDate.setOnClickListener(v -> {
+            Calendar c = Calendar.getInstance();
+            DatePickerDialog dp = new DatePickerDialog(
+                    getContext(),
+                    (DatePicker view, int year, int month, int dayOfMonth) -> {
+                        String d = String.format(Locale.getDefault(),
+                                "%02d/%02d/%04d", dayOfMonth, month + 1, year);
+                        etStartDate.setText(d);
+                    },
+                    c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+            dp.show();
+        });
+        root.addView(etStartDate);
+
+        new android.app.AlertDialog.Builder(getContext())
+                .setTitle("Add BC Scheme")
+                .setView(root)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Add", (d, w) -> {
+                    String accountName = etAccount.getText().toString().trim();
+                    String bcName = etBcName.getText().toString().trim();
+                    String monthsStr = etMonths.getText().toString().trim();
+                    String startDate = etStartDate.getText().toString().trim();
+
+                    if (TextUtils.isEmpty(bcName) ||
+                            TextUtils.isEmpty(monthsStr) ||
+                            TextUtils.isEmpty(startDate)) {
+                        Toast.makeText(getContext(),
+                                "BC Name, Months and Start Date are required",
+                                Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int months;
+                    try {
+                        months = Integer.parseInt(monthsStr);
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(getContext(), "Invalid months", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    BcScheme scheme = new BcScheme();
+                    scheme.name = bcName;
+                    scheme.months = months;
+                    scheme.startDate = startDate;
+                    generateBcSchedule(scheme);  // fill scheduleDates
+
+                    String key = TextUtils.isEmpty(accountName) ? "_GLOBAL_" : accountName;
+                    ArrayList<BcScheme> list = bcMap.get(key);
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        bcMap.put(key, list);
+                    }
+                    list.add(scheme);
+
+                    Toast.makeText(getContext(), "BC added", Toast.LENGTH_SHORT).show();
+                })
+                .show();
+    }
+
+    // STEP 4: create monthly schedule dates for a BC scheme
+    private void generateBcSchedule(BcScheme scheme) {
+        scheme.scheduleDates.clear();
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        Calendar c = Calendar.getInstance();
+        try {
+            c.setTime(df.parse(scheme.startDate));
+        } catch (ParseException e) {
+            return;
+        }
+        for (int i = 0; i < scheme.months; i++) {
+            scheme.scheduleDates.add(df.format(c.getTime()));
+            c.add(Calendar.MONTH, 1);
+        }
+    }
+
+    // STEP 4: list all BC schemes and open details
+    private void showBcListDialog() {
+        if (bcMap.isEmpty()) {
+            Toast.makeText(getContext(), "No BC schemes added", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Flatten map into labels and references
+        List<String> labels = new ArrayList<>();
+        List<BcScheme> schemes = new ArrayList<>();
+        for (String key : bcMap.keySet()) {
+            ArrayList<BcScheme> list = bcMap.get(key);
+            if (list == null) continue;
+            for (BcScheme s : list) {
+                String label = (key.equals("_GLOBAL_") ? "" : key + " - ") + s.name;
+                labels.add(label);
+                schemes.add(s);
+            }
+        }
+        if (labels.isEmpty()) {
+            Toast.makeText(getContext(), "No BC schemes added", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        new android.app.AlertDialog.Builder(getContext())
+                .setTitle("BC Schemes")
+                .setItems(labels.toArray(new String[0]), (d, which) -> {
+                    BcScheme s = schemes.get(which);
+                    showBcDetailsDialog(s);
+                })
+                .setNegativeButton("Close", null)
+                .show();
+    }
+
+    // STEP 4: show one BC scheme with its schedule dates (checkbox-like list, not persisted)
+    private void showBcDetailsDialog(BcScheme scheme) {
+        ScrollView scrollView = new ScrollView(getContext());
+        LinearLayout container = new LinearLayout(getContext());
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8));
+        scrollView.addView(container);
+
+        for (String date : scheme.scheduleDates) {
+            TextView tv = new TextView(getContext());
+            tv.setText("□ " + date);  // visual checkbox (no state persistence yet)
+            tv.setTextSize(14);
+            tv.setPadding(0, dpToPx(4), 0, dpToPx(4));
+            container.addView(tv);
+        }
+
+        new android.app.AlertDialog.Builder(getContext())
+                .setTitle("BC: " + scheme.name)
+                .setView(scrollView)
+                .setPositiveButton("Close", null)
+                .show();
     }
 
     public void updateBalanceList() {
@@ -301,7 +478,7 @@ public class GivenFragment extends Fragment {
             balanceLabel.setLayoutParams(pinkParams);
             row.addView(balanceLabel);
 
-            // Per-person three-dots menu
+            // Per-person three-dots menu (delete + interest notes already implemented in Step 2/3)
             ImageView morePerson = new ImageView(getContext());
             LinearLayout.LayoutParams moreParams = new LinearLayout.LayoutParams(
                     dpToPx(24), dpToPx(24));
@@ -330,7 +507,7 @@ public class GivenFragment extends Fragment {
             if ("Delete Entry".equals(title)) {
                 showDeleteEntriesDialog(name);
             } else if ("Notes (Interest)".equals(title)) {
-                showInterestNotesDialog(name);   // STEP 3: open Interest notes
+                showInterestNotesDialog(name);
             }
             return true;
         });
@@ -397,7 +574,7 @@ public class GivenFragment extends Fragment {
                 .show();
     }
 
-    // STEP 3: show only Interest entries for this person in a scrollable dialog
+    // Interest notes dialog (already from Step 3)
     private void showInterestNotesDialog(String name) {
         ArrayList<Entry> list = givenMap.get(name);
         if (list == null || list.isEmpty()) {
@@ -405,7 +582,6 @@ public class GivenFragment extends Fragment {
             return;
         }
 
-        // Filter Interest-only entries
         List<Entry> interestEntries = new ArrayList<>();
         for (Entry e : list) {
             if ("Interest (%)".equalsIgnoreCase(e.category) ||
@@ -419,7 +595,6 @@ public class GivenFragment extends Fragment {
             return;
         }
 
-        // Build scrollable layout programmatically
         ScrollView scrollView = new ScrollView(getContext());
         LinearLayout container = new LinearLayout(getContext());
         container.setOrientation(LinearLayout.VERTICAL);
@@ -434,13 +609,13 @@ public class GivenFragment extends Fragment {
             if (!TextUtils.isEmpty(e.date)) sb.append("  • ").append(e.date);
             tv.setText(sb.toString());
             tv.setTextSize(14);
-            tv.setTextColor(0xFF1976D2); // blue for interest
+            tv.setTextColor(0xFF1976D2);
             tv.setPadding(0, dpToPx(4), 0, dpToPx(4));
             container.addView(tv);
         }
 
         new android.app.AlertDialog.Builder(getContext())
-                .setTitle("Interest (Vyaj) – " + name)   // STEP 3 header
+                .setTitle("Interest (Vyaj) – " + name)
                 .setView(scrollView)
                 .setPositiveButton("Close", null)
                 .show();
