@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;     // STEP 3: for scrollable Interest list
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -308,7 +309,6 @@ public class ReceivedFragment extends Fragment {
             morePerson.setImageResource(R.drawable.ic_more_vert);
             row.addView(morePerson);
 
-            // STEP 2: use real menu with Delete Entry working
             morePerson.setOnClickListener(v -> showPersonMenu(v, name));
 
             layoutBalanceList.addView(row);
@@ -319,7 +319,7 @@ public class ReceivedFragment extends Fragment {
         }
     }
 
-    // STEP 2: real per-person menu with Delete Entry dialog
+    // Per-person menu: Delete + Notes (Interest)
     private void showPersonMenu(View anchor, String name) {
         PopupMenu menu = new PopupMenu(getContext(), anchor);
         menu.getMenu().add("Delete Entry");
@@ -327,20 +327,17 @@ public class ReceivedFragment extends Fragment {
         menu.setOnMenuItemClickListener(item -> {
             String title = item.getTitle().toString();
             if ("Delete Entry".equals(title)) {
-                showDeleteEntriesDialog(name);   // real implementation
+                showDeleteEntriesDialog(name);
             } else if ("Notes (Interest)".equals(title)) {
-                Toast.makeText(getContext(),
-                        "Interest notes for " + name + " (coming soon)",
-                        Toast.LENGTH_SHORT).show();
+                showInterestNotesDialog(name);   // STEP 3: open Interest notes
             }
             return true;
         });
         menu.show();
     }
 
-    // STEP 2: multi-select delete dialog for this person's Given entries
     private void showDeleteEntriesDialog(String name) {
-        ArrayList<Entry> list = givenMap.get(name);
+        ArrayList<Entry> list = receivedMap.get(name); // fix: use receivedMap here
         if (list == null || list.isEmpty()) {
             Toast.makeText(getContext(), "No entries to delete for " + name, Toast.LENGTH_SHORT).show();
             return;
@@ -374,7 +371,6 @@ public class ReceivedFragment extends Fragment {
                         return;
                     }
 
-                    // remove from end to avoid index shift
                     for (int i = list.size() - 1; i >= 0; i--) {
                         if (checked[i]) list.remove(i);
                     }
@@ -397,6 +393,53 @@ public class ReceivedFragment extends Fragment {
                     Toast.makeText(getContext(), "Deleted selected entries for " + name,
                             Toast.LENGTH_SHORT).show();
                 })
+                .show();
+    }
+
+    // STEP 3: show only Interest entries for this person (Received side)
+    private void showInterestNotesDialog(String name) {
+        ArrayList<Entry> list = receivedMap.get(name);
+        if (list == null || list.isEmpty()) {
+            Toast.makeText(getContext(), "No entries for " + name, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<Entry> interestEntries = new ArrayList<>();
+        for (Entry e : list) {
+            if ("Interest (%)".equalsIgnoreCase(e.category) ||
+                "Interest".equalsIgnoreCase(e.category)) {
+                interestEntries.add(e);
+            }
+        }
+
+        if (interestEntries.isEmpty()) {
+            Toast.makeText(getContext(), "No Interest entries for " + name, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ScrollView scrollView = new ScrollView(getContext());
+        LinearLayout container = new LinearLayout(getContext());
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8));
+        scrollView.addView(container);
+
+        for (Entry e : interestEntries) {
+            TextView tv = new TextView(getContext());
+            StringBuilder sb = new StringBuilder();
+            sb.append("₹").append(e.amount);
+            if (!TextUtils.isEmpty(e.note)) sb.append("  • ").append(e.note);
+            if (!TextUtils.isEmpty(e.date)) sb.append("  • ").append(e.date);
+            tv.setText(sb.toString());
+            tv.setTextSize(14);
+            tv.setTextColor(0xFF1976D2);
+            tv.setPadding(0, dpToPx(4), 0, dpToPx(4));
+            container.addView(tv);
+        }
+
+        new android.app.AlertDialog.Builder(getContext())
+                .setTitle("Interest (Vyaj) – " + name)
+                .setView(scrollView)
+                .setPositiveButton("Close", null)
                 .show();
     }
 
