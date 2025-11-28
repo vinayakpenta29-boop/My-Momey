@@ -9,15 +9,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.fragment.app.Fragment;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -27,6 +33,7 @@ public class ReceivedFragment extends Fragment {
     private Button addButton;
     private RadioGroup categoryGroup;
     private LinearLayout layoutBalanceList;
+    private ImageButton btnMoreTopReceived; // top-right BC menu
 
     public static class Entry implements EntryBase {
         public int amount;
@@ -118,10 +125,16 @@ public class ReceivedFragment extends Fragment {
         addButton = v.findViewById(R.id.buttonAdd);
         layoutBalanceList = v.findViewById(R.id.layoutBalanceList);
         categoryGroup = v.findViewById(R.id.radioGroupCategory);
+        btnMoreTopReceived = v.findViewById(R.id.btnMoreTopReceived);
 
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
 
-                // Make RadioGroup togglable: tap again to unselect
+        // Top-right BC three-dots menu (placeholder for now)
+        if (btnMoreTopReceived != null) {
+            btnMoreTopReceived.setOnClickListener(view -> showBcMenu(view));
+        }
+
+        // Make RadioGroup togglable: tap again to unselect
         categoryGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             private int lastCheckedId = -1;
 
@@ -186,6 +199,17 @@ public class ReceivedFragment extends Fragment {
 
         updateBalanceList();
         return v;
+    }
+
+    // Placeholder BC menu
+    private void showBcMenu(View anchor) {
+        PopupMenu menu = new PopupMenu(getContext(), anchor);
+        menu.getMenu().add("BC (coming soon)");
+        menu.setOnMenuItemClickListener(item -> {
+            Toast.makeText(getContext(), "BC menu: " + item.getTitle(), Toast.LENGTH_SHORT).show();
+            return true;
+        });
+        menu.show();
     }
 
     public void updateBalanceList() {
@@ -275,12 +299,40 @@ public class ReceivedFragment extends Fragment {
             balanceLabel.setLayoutParams(pinkParams);
             row.addView(balanceLabel);
 
+            // Per-person three-dots menu (placeholder)
+            ImageView morePerson = new ImageView(getContext());
+            LinearLayout.LayoutParams moreParams = new LinearLayout.LayoutParams(
+                    dpToPx(24), dpToPx(24));
+            moreParams.setMargins(dpToPx(8), 0, 0, 0);
+            morePerson.setLayoutParams(moreParams);
+            morePerson.setImageResource(R.drawable.ic_more_vert);
+            row.addView(morePerson);
+
+            morePerson.setOnClickListener(v -> showPersonMenu(v, name));
+
             layoutBalanceList.addView(row);
 
             if (i != names.size() - 1) {
                 addDividerWithMargin(layoutBalanceList, 1);
             }
         }
+    }
+
+    // Placeholder per-person menu
+    private void showPersonMenu(View anchor, String name) {
+        PopupMenu menu = new PopupMenu(getContext(), anchor);
+        menu.getMenu().add("Delete Entry");
+        menu.getMenu().add("Notes (Interest)");
+        menu.setOnMenuItemClickListener(item -> {
+            String title = item.getTitle().toString();
+            if ("Delete Entry".equals(title)) {
+                Toast.makeText(getContext(), "Delete Entry for " + name + " (coming soon)", Toast.LENGTH_SHORT).show();
+            } else if ("Notes (Interest)".equals(title)) {
+                Toast.makeText(getContext(), "Interest notes for " + name + " (coming soon)", Toast.LENGTH_SHORT).show();
+            }
+            return true;
+        });
+        menu.show();
     }
 
     private void addDividerWithMargin(LinearLayout layout, int thicknessDp) {
