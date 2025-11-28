@@ -164,7 +164,7 @@ public class ReceivedFragment extends Fragment {
                     nameInput.setText("");
                     amountInput.setText("");
                     noteInput.setText("");
-                    categoryGroup.clearCheck(),
+                    categoryGroup.clearCheck();
                     notifySummaryUpdate();
                     updateBalanceList();
 
