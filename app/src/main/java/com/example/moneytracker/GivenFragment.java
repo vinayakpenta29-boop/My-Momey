@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;          // STEP 3: added for scrollable dialog content
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -309,7 +310,6 @@ public class GivenFragment extends Fragment {
             morePerson.setImageResource(R.drawable.ic_more_vert);
             row.addView(morePerson);
 
-            // STEP 2: use real menu with Delete Entry working
             morePerson.setOnClickListener(v -> showPersonMenu(v, name));
 
             layoutBalanceList.addView(row);
@@ -320,7 +320,7 @@ public class GivenFragment extends Fragment {
         }
     }
 
-    // STEP 2: real per-person menu with Delete Entry dialog
+    // Per-person menu (Delete + Notes)
     private void showPersonMenu(View anchor, String name) {
         PopupMenu menu = new PopupMenu(getContext(), anchor);
         menu.getMenu().add("Delete Entry");
@@ -328,18 +328,15 @@ public class GivenFragment extends Fragment {
         menu.setOnMenuItemClickListener(item -> {
             String title = item.getTitle().toString();
             if ("Delete Entry".equals(title)) {
-                showDeleteEntriesDialog(name);   // real implementation
+                showDeleteEntriesDialog(name);
             } else if ("Notes (Interest)".equals(title)) {
-                Toast.makeText(getContext(),
-                        "Interest notes for " + name + " (coming soon)",
-                        Toast.LENGTH_SHORT).show();
+                showInterestNotesDialog(name);   // STEP 3: open Interest notes
             }
             return true;
         });
         menu.show();
     }
 
-    // STEP 2: multi-select delete dialog for this person's Given entries
     private void showDeleteEntriesDialog(String name) {
         ArrayList<Entry> list = givenMap.get(name);
         if (list == null || list.isEmpty()) {
@@ -375,7 +372,6 @@ public class GivenFragment extends Fragment {
                         return;
                     }
 
-                    // remove from end to avoid index shift
                     for (int i = list.size() - 1; i >= 0; i--) {
                         if (checked[i]) list.remove(i);
                     }
@@ -401,6 +397,55 @@ public class GivenFragment extends Fragment {
                 .show();
     }
 
+    // STEP 3: show only Interest entries for this person in a scrollable dialog
+    private void showInterestNotesDialog(String name) {
+        ArrayList<Entry> list = givenMap.get(name);
+        if (list == null || list.isEmpty()) {
+            Toast.makeText(getContext(), "No entries for " + name, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Filter Interest-only entries
+        List<Entry> interestEntries = new ArrayList<>();
+        for (Entry e : list) {
+            if ("Interest (%)".equalsIgnoreCase(e.category) ||
+                "Interest".equalsIgnoreCase(e.category)) {
+                interestEntries.add(e);
+            }
+        }
+
+        if (interestEntries.isEmpty()) {
+            Toast.makeText(getContext(), "No Interest entries for " + name, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Build scrollable layout programmatically
+        ScrollView scrollView = new ScrollView(getContext());
+        LinearLayout container = new LinearLayout(getContext());
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8));
+        scrollView.addView(container);
+
+        for (Entry e : interestEntries) {
+            TextView tv = new TextView(getContext());
+            StringBuilder sb = new StringBuilder();
+            sb.append("₹").append(e.amount);
+            if (!TextUtils.isEmpty(e.note)) sb.append("  • ").append(e.note);
+            if (!TextUtils.isEmpty(e.date)) sb.append("  • ").append(e.date);
+            tv.setText(sb.toString());
+            tv.setTextSize(14);
+            tv.setTextColor(0xFF1976D2); // blue for interest
+            tv.setPadding(0, dpToPx(4), 0, dpToPx(4));
+            container.addView(tv);
+        }
+
+        new android.app.AlertDialog.Builder(getContext())
+                .setTitle("Interest (Vyaj) – " + name)   // STEP 3 header
+                .setView(scrollView)
+                .setPositiveButton("Close", null)
+                .show();
+    }
+
     private void addDividerWithMargin(LinearLayout layout, int thicknessDp) {
         View line = new View(getContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -414,7 +459,7 @@ public class GivenFragment extends Fragment {
 
     private int dpToPx(int dp) {
         float density = getContext().getResources().getDisplayMetrics().density;
-        return Math.round(dp * density);
+        return Math.round((float) dp * density);
     }
 
     public static void deleteAccount(Context context, String name) {
