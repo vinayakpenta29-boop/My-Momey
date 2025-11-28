@@ -130,7 +130,7 @@ public class GivenFragment extends Fragment {
 
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
 
-        // Top-right BC three-dots menu (placeholder for now)
+        // Top-right BC three-dots menu (still placeholder)
         if (btnMoreTopGiven != null) {
             btnMoreTopGiven.setOnClickListener(view -> showBcMenu(view));
         }
@@ -202,7 +202,7 @@ public class GivenFragment extends Fragment {
         return v;
     }
 
-    // Placeholder BC menu shown from top-right three dots
+    // Top-right BC menu (placeholder)
     private void showBcMenu(View anchor) {
         PopupMenu menu = new PopupMenu(getContext(), anchor);
         menu.getMenu().add("BC (coming soon)");
@@ -300,7 +300,7 @@ public class GivenFragment extends Fragment {
             balanceLabel.setLayoutParams(pinkParams);
             row.addView(balanceLabel);
 
-            // Per-person three-dots menu (placeholder)
+            // Per-person three-dots menu
             ImageView morePerson = new ImageView(getContext());
             LinearLayout.LayoutParams moreParams = new LinearLayout.LayoutParams(
                     dpToPx(24), dpToPx(24));
@@ -309,6 +309,7 @@ public class GivenFragment extends Fragment {
             morePerson.setImageResource(R.drawable.ic_more_vert);
             row.addView(morePerson);
 
+            // STEP 2: use real menu with Delete Entry working
             morePerson.setOnClickListener(v -> showPersonMenu(v, name));
 
             layoutBalanceList.addView(row);
@@ -319,7 +320,7 @@ public class GivenFragment extends Fragment {
         }
     }
 
-    // Placeholder per-person menu (Step 1: just Toasts)
+    // STEP 2: real per-person menu with Delete Entry dialog
     private void showPersonMenu(View anchor, String name) {
         PopupMenu menu = new PopupMenu(getContext(), anchor);
         menu.getMenu().add("Delete Entry");
@@ -327,13 +328,77 @@ public class GivenFragment extends Fragment {
         menu.setOnMenuItemClickListener(item -> {
             String title = item.getTitle().toString();
             if ("Delete Entry".equals(title)) {
-                Toast.makeText(getContext(), "Delete Entry for " + name + " (coming soon)", Toast.LENGTH_SHORT).show();
+                showDeleteEntriesDialog(name);   // real implementation
             } else if ("Notes (Interest)".equals(title)) {
-                Toast.makeText(getContext(), "Interest notes for " + name + " (coming soon)", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(),
+                        "Interest notes for " + name + " (coming soon)",
+                        Toast.LENGTH_SHORT).show();
             }
             return true;
         });
         menu.show();
+    }
+
+    // STEP 2: multi-select delete dialog for this person's Given entries
+    private void showDeleteEntriesDialog(String name) {
+        ArrayList<Entry> list = givenMap.get(name);
+        if (list == null || list.isEmpty()) {
+            Toast.makeText(getContext(), "No entries to delete for " + name, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String[] labels = new String[list.size()];
+        boolean[] checked = new boolean[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            Entry e = list.get(i);
+            StringBuilder sb = new StringBuilder();
+            sb.append("₹").append(e.amount);
+            if (!TextUtils.isEmpty(e.note)) sb.append("  ").append(e.note);
+            if (!TextUtils.isEmpty(e.date)) sb.append("  ").append(e.date);
+            labels[i] = sb.toString();
+            checked[i] = false;
+        }
+
+        new android.app.AlertDialog.Builder(getContext())
+                .setTitle("Delete entries for " + name)
+                .setMultiChoiceItems(labels, checked, (dialog, which, isChecked) -> {
+                    checked[which] = isChecked;
+                })
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    boolean anySelected = false;
+                    for (boolean b : checked) {
+                        if (b) { anySelected = true; break; }
+                    }
+                    if (!anySelected) {
+                        Toast.makeText(getContext(), "No entries selected", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // remove from end to avoid index shift
+                    for (int i = list.size() - 1; i >= 0; i--) {
+                        if (checked[i]) list.remove(i);
+                    }
+                    if (list.isEmpty()) {
+                        givenMap.remove(name);
+                    }
+                    saveMap(getContext());
+                    notifySummaryUpdate();
+                    updateBalanceList();
+
+                    try {
+                        ReceivedFragment receivedFragment = (ReceivedFragment) getActivity()
+                                .getSupportFragmentManager()
+                                .findFragmentByTag("f1");
+                        if (receivedFragment != null) {
+                            receivedFragment.updateBalanceList();
+                        }
+                    } catch (Exception ignored) {}
+
+                    Toast.makeText(getContext(), "Deleted selected entries for " + name,
+                            Toast.LENGTH_SHORT).show();
+                })
+                .show();
     }
 
     private void addDividerWithMargin(LinearLayout layout, int thicknessDp) {
