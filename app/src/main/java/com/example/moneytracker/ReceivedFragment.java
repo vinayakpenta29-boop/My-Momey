@@ -27,7 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -86,7 +86,7 @@ public class ReceivedFragment extends Fragment {
         List<String> scheduleDates = new ArrayList<>();
     }
 
-    private static final HashMap<String, ArrayList<BcScheme>> bcMap new HashMap<>();
+    private static final HashMap<String, ArrayList<BcScheme>> bcMap = new HashMap<>();
 
     public static void saveMap(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -217,7 +217,7 @@ public class ReceivedFragment extends Fragment {
     // Placeholder BC menu
     private void showBcMenu(View anchor) {
         PopupMenu menu = new PopupMenu(getContext(), anchor);
-        menu.getMenu().add("BC ("Add BC");
+        menu.getMenu().add("Add BC");
         menu.getMenu().add("view BC List");
         menu.setOnMenuItemClickListener(item -> {
             String title = item.getTitle().toString();
