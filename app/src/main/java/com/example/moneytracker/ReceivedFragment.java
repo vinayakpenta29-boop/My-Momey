@@ -1,6 +1,6 @@
 package com.example.moneytracker;
 
-import android.app.DatePickerDialog;
+import android.app.DatePickerDialog;                     // OK
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -9,7 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.app.DatePicker;
+import android.app.DatePicker;                            // OK
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -17,7 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.ScrollView;     // STEP 3: for scrollable Interest list
+import android.widget.ScrollView;                         // STEP 3: for scrollable Interest list
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,7 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
+import java.text.ParseException;                          // OK
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -79,13 +79,15 @@ public class ReceivedFragment extends Fragment {
     private static final String PREFS_NAME = "MoneyTrackerPrefs";
     private static final String RECEIVED_KEY = "received_data";
 
-    private static class Bcscheme {
+    // STEP 4: BC scheme type (fixed class name: BcScheme, not Bcscheme)
+    private static class BcScheme {
         String name;
         int months;
-        String startDate;
+        String startDate;              // dd/MM/yyyy
         List<String> scheduleDates = new ArrayList<>();
     }
 
+    // STEP 4: BC map for this fragment
     private static final HashMap<String, ArrayList<BcScheme>> bcMap = new HashMap<>();
 
     public static void saveMap(Context context) {
@@ -142,7 +144,7 @@ public class ReceivedFragment extends Fragment {
 
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
 
-        // Top-right BC three-dots menu (placeholder for now)
+        // STEP 4: Top-right BC three-dots menu -> BC Manager
         if (btnMoreTopReceived != null) {
             btnMoreTopReceived.setOnClickListener(this::showBcManagerMenu);
         }
@@ -214,11 +216,11 @@ public class ReceivedFragment extends Fragment {
         return v;
     }
 
-    // Placeholder BC menu
-    private void showBcMenu(View anchor) {
+    // STEP 4: BC Manager main menu (top-right button)
+    private void showBcManagerMenu(View anchor) {
         PopupMenu menu = new PopupMenu(getContext(), anchor);
         menu.getMenu().add("Add BC");
-        menu.getMenu().add("view BC List");
+        menu.getMenu().add("View BC List");
         menu.setOnMenuItemClickListener(item -> {
             String title = item.getTitle().toString();
             if ("Add BC".equals(title)) {
@@ -337,7 +339,6 @@ public class ReceivedFragment extends Fragment {
             return;
         }
 
-        // Flatten map into labels and references
         List<String> labels = new ArrayList<>();
         List<BcScheme> schemes = new ArrayList<>();
         for (String key : bcMap.keySet()) {
@@ -364,7 +365,7 @@ public class ReceivedFragment extends Fragment {
                 .show();
     }
 
-    // STEP 4: show one BC scheme with its schedule dates (checkbox-like list, not persisted)
+    // STEP 4: show one BC scheme with its schedule dates
     private void showBcDetailsDialog(BcScheme scheme) {
         ScrollView scrollView = new ScrollView(getContext());
         LinearLayout container = new LinearLayout(getContext());
@@ -374,7 +375,7 @@ public class ReceivedFragment extends Fragment {
 
         for (String date : scheme.scheduleDates) {
             TextView tv = new TextView(getContext());
-            tv.setText("□ " + date);  // visual checkbox (no state persistence yet)
+            tv.setText("□ " + date);
             tv.setTextSize(14);
             tv.setPadding(0, dpToPx(4), 0, dpToPx(4));
             container.addView(tv);
@@ -386,7 +387,6 @@ public class ReceivedFragment extends Fragment {
                 .setPositiveButton("Close", null)
                 .show();
     }
-
 
     public void updateBalanceList() {
         if (layoutBalanceList == null) return;
@@ -447,7 +447,7 @@ public class ReceivedFragment extends Fragment {
             greenLabel.setLayoutParams(greenParams);
             row.addView(greenLabel);
 
-            // Spacer to push balance section to right
+            // Spacer
             View spacer = new View(getContext());
             LinearLayout.LayoutParams spacerParams = new LinearLayout.LayoutParams(0, 0, 1f);
             spacer.setLayoutParams(spacerParams);
@@ -504,7 +504,7 @@ public class ReceivedFragment extends Fragment {
             if ("Delete Entry".equals(title)) {
                 showDeleteEntriesDialog(name);
             } else if ("Notes (Interest)".equals(title)) {
-                showInterestNotesDialog(name);   // STEP 3: open Interest notes
+                showInterestNotesDialog(name);
             }
             return true;
         });
@@ -512,7 +512,7 @@ public class ReceivedFragment extends Fragment {
     }
 
     private void showDeleteEntriesDialog(String name) {
-        ArrayList<Entry> list = receivedMap.get(name); // fix: use receivedMap here
+        ArrayList<Entry> list = receivedMap.get(name);
         if (list == null || list.isEmpty()) {
             Toast.makeText(getContext(), "No entries to delete for " + name, Toast.LENGTH_SHORT).show();
             return;
@@ -571,7 +571,7 @@ public class ReceivedFragment extends Fragment {
                 .show();
     }
 
-    // STEP 3: show only Interest entries for this person (Received side)
+    // Interest notes dialog
     private void showInterestNotesDialog(String name) {
         ArrayList<Entry> list = receivedMap.get(name);
         if (list == null || list.isEmpty()) {
@@ -588,7 +588,7 @@ public class ReceivedFragment extends Fragment {
         }
 
         if (interestEntries.isEmpty()) {
-            Toast.makeText(getContext(), "No Interest entries for " + name, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "No Interest entries for " + name", Toast.LENGTH_SHORT).show();
             return;
         }
 
