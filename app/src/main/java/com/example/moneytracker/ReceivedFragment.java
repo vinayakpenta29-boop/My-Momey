@@ -588,7 +588,7 @@ public class ReceivedFragment extends Fragment {
         }
 
         if (interestEntries.isEmpty()) {
-            Toast.makeText(getContext(), "No Interest entries for " + name", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "No Interest entries for " + name, Toast.LENGTH_SHORT).show();
             return;
         }
 
