@@ -379,18 +379,18 @@ public class ReceivedFragment extends Fragment {
                         if (checked[i]) list.remove(i);
                     }
                     if (list.isEmpty()) {
-                        givenMap.remove(name);
+                        receivedMap.remove(name);
                     }
                     saveMap(getContext());
                     notifySummaryUpdate();
                     updateBalanceList();
 
                     try {
-                        ReceivedFragment receivedFragment = (ReceivedFragment) getActivity()
+                        GivenFragment givenFragment = (GivenFragment) getActivity()
                                 .getSupportFragmentManager()
-                                .findFragmentByTag("f1");
-                        if (receivedFragment != null) {
-                            receivedFragment.updateBalanceList();
+                                .findFragmentByTag("f0");
+                        if (givenFragment != null) {
+                            givenFragment.updateBalanceList();
                         }
                     } catch (Exception ignored) {}
 
