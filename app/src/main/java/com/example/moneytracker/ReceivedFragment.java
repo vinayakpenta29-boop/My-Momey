@@ -1,6 +1,6 @@
 package com.example.moneytracker;
 
-import android.app.DatePickerDialog;                     // OK
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -17,7 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.ScrollView;                         // STEP 3: for scrollable Interest list
+import android.widget.ScrollView;     // STEP 3: for scrollable Interest list
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,9 +27,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;                          // OK
+import java.text.ParseException;     // used in generateBcSchedule
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+// BcStore imports
+import com.example.moneytracker.BcStore;
+import com.example.moneytracker.BcStore.BcScheme;
 
 public class ReceivedFragment extends Fragment {
 
@@ -79,17 +83,6 @@ public class ReceivedFragment extends Fragment {
     private static final String PREFS_NAME = "MoneyTrackerPrefs";
     private static final String RECEIVED_KEY = "received_data";
 
-    // STEP 4: BC scheme type (fixed class name: BcScheme, not Bcscheme)
-    private static class BcScheme {
-        String name;
-        int months;
-        String startDate;              // dd/MM/yyyy
-        List<String> scheduleDates = new ArrayList<>();
-    }
-
-    // STEP 4: BC map for this fragment
-    private static final HashMap<String, ArrayList<BcScheme>> bcMap = new HashMap<>();
-
     public static void saveMap(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         JSONObject root = new JSONObject();
@@ -133,6 +126,8 @@ public class ReceivedFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         loadMap(requireContext());
+        BcStore.load(requireContext());   // BcStore: load BC data
+
         View v = inflater.inflate(R.layout.fragment_received, container, false);
         nameInput = v.findViewById(R.id.editTextName);
         amountInput = v.findViewById(R.id.editTextAmount);
@@ -144,7 +139,7 @@ public class ReceivedFragment extends Fragment {
 
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
 
-        // STEP 4: Top-right BC three-dots menu -> BC Manager
+        // Top-right BC three-dots menu -> BC Manager
         if (btnMoreTopReceived != null) {
             btnMoreTopReceived.setOnClickListener(this::showBcManagerMenu);
         }
@@ -216,7 +211,7 @@ public class ReceivedFragment extends Fragment {
         return v;
     }
 
-    // STEP 4: BC Manager main menu (top-right button)
+    // BC Manager main menu (top-right button)
     private void showBcManagerMenu(View anchor) {
         PopupMenu menu = new PopupMenu(getContext(), anchor);
         menu.getMenu().add("Add BC");
@@ -233,7 +228,7 @@ public class ReceivedFragment extends Fragment {
         menu.show();
     }
 
-    // STEP 4: dialog to create a new BC scheme
+    // Dialog to create a new BC scheme
     private void showAddBcDialog() {
         LinearLayout root = new LinearLayout(getContext());
         root.setOrientation(LinearLayout.VERTICAL);
@@ -304,19 +299,15 @@ public class ReceivedFragment extends Fragment {
                     generateBcSchedule(scheme);  // fill scheduleDates
 
                     String key = TextUtils.isEmpty(accountName) ? "_GLOBAL_" : accountName;
-                    ArrayList<BcScheme> list = bcMap.get(key);
-                    if (list == null) {
-                        list = new ArrayList<>();
-                        bcMap.put(key, list);
-                    }
-                    list.add(scheme);
+                    BcStore.addScheme(key, scheme);     // BcStore
+                    BcStore.save(getContext());         // BcStore
 
                     Toast.makeText(getContext(), "BC added", Toast.LENGTH_SHORT).show();
                 })
                 .show();
     }
 
-    // STEP 4: create monthly schedule dates for a BC scheme
+    // Create monthly schedule dates for a BC scheme
     private void generateBcSchedule(BcScheme scheme) {
         scheme.scheduleDates.clear();
         SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -332,8 +323,10 @@ public class ReceivedFragment extends Fragment {
         }
     }
 
-    // STEP 4: list all BC schemes and open details
+    // List all BC schemes and open details
     private void showBcListDialog() {
+        HashMap<String, ArrayList<BcScheme>> bcMap = BcStore.getBcMap();   // BcStore
+
         if (bcMap.isEmpty()) {
             Toast.makeText(getContext(), "No BC schemes added", Toast.LENGTH_SHORT).show();
             return;
@@ -365,7 +358,7 @@ public class ReceivedFragment extends Fragment {
                 .show();
     }
 
-    // STEP 4: show one BC scheme with its schedule dates
+    // Show one BC scheme with its schedule dates
     private void showBcDetailsDialog(BcScheme scheme) {
         ScrollView scrollView = new ScrollView(getContext());
         LinearLayout container = new LinearLayout(getContext());
@@ -402,14 +395,12 @@ public class ReceivedFragment extends Fragment {
             int totalReceived = 0;
             int totalGave = 0;
 
-            // RECEIVED side: only normal entries (category == "")
             for (ReceivedFragment.Entry e : receivedMap.get(name)) {
                 if (TextUtils.isEmpty(e.category)) {
                     totalReceived += e.getAmount();
                 }
             }
 
-            // GIVEN side: only normal entries
             if (givenMap != null && givenMap.containsKey(name)) {
                 for (GivenFragment.Entry e : givenMap.get(name)) {
                     if (TextUtils.isEmpty(e.category)) {
@@ -425,7 +416,6 @@ public class ReceivedFragment extends Fragment {
             row.setPadding(0, 12, 0, 12);
             row.setGravity(android.view.Gravity.CENTER_VERTICAL);
 
-            // Name
             TextView nameTv = new TextView(getContext());
             nameTv.setText(name);
             nameTv.setTextSize(16);
@@ -433,7 +423,6 @@ public class ReceivedFragment extends Fragment {
             nameTv.setTypeface(null, android.graphics.Typeface.BOLD);
             row.addView(nameTv);
 
-            // Green box (total received)
             TextView greenLabel = new TextView(getContext());
             greenLabel.setText("₹" + totalReceived);
             greenLabel.setTextSize(14);
@@ -447,13 +436,11 @@ public class ReceivedFragment extends Fragment {
             greenLabel.setLayoutParams(greenParams);
             row.addView(greenLabel);
 
-            // Spacer
             View spacer = new View(getContext());
             LinearLayout.LayoutParams spacerParams = new LinearLayout.LayoutParams(0, 0, 1f);
             spacer.setLayoutParams(spacerParams);
             row.addView(spacer);
 
-            // "Balance :" label
             TextView balanceText = new TextView(getContext());
             balanceText.setText("Balance : ");
             balanceText.setTextSize(14);
@@ -461,7 +448,6 @@ public class ReceivedFragment extends Fragment {
             balanceText.setTextColor(0xFFB0B0B0);
             row.addView(balanceText);
 
-            // Pink box (net balance)
             TextView balanceLabel = new TextView(getContext());
             balanceLabel.setText("₹" + netBalance);
             balanceLabel.setTextSize(14);
@@ -475,7 +461,6 @@ public class ReceivedFragment extends Fragment {
             balanceLabel.setLayoutParams(pinkParams);
             row.addView(balanceLabel);
 
-            // Per-person three-dots menu
             ImageView morePerson = new ImageView(getContext());
             LinearLayout.LayoutParams moreParams = new LinearLayout.LayoutParams(
                     dpToPx(24), dpToPx(24));
