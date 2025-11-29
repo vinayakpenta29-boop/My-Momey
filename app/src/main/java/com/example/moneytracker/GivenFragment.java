@@ -32,6 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 // BcStore imports
+import com.example.moneytracker.BcStore;
 import com.example.moneytracker.BcStore.BcScheme;
 
 public class GivenFragment extends Fragment {
@@ -126,8 +127,7 @@ public class GivenFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         loadMap(requireContext());
-        // BcStore: load BC data
-        BcStore.load(requireContext());
+        BcStore.load(requireContext());   // load BC data
 
         View v = inflater.inflate(R.layout.fragment_given, container, false);
         nameInput = v.findViewById(R.id.editTextName);
@@ -140,7 +140,6 @@ public class GivenFragment extends Fragment {
 
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
 
-        // Top-right BC three-dots menu -> BC Manager (using BcStore)
         if (btnMoreTopGiven != null) {
             btnMoreTopGiven.setOnClickListener(this::showBcManagerMenu);
         }
@@ -153,7 +152,7 @@ public class GivenFragment extends Fragment {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 if (checkedId == -1) return;
                 if (checkedId == lastCheckedId) {
-                    group.clearCheck();      // unselect when tapping same option
+                    group.clearCheck();
                     lastCheckedId = -1;
                 } else {
                     lastCheckedId = checkedId;
@@ -166,7 +165,6 @@ public class GivenFragment extends Fragment {
             String amountStr = amountInput.getText().toString().trim();
             String noteStr = noteInput.getText().toString().trim();
 
-            // No default; empty string means normal entry
             int checkedId = categoryGroup.getCheckedRadioButtonId();
             String category = "";
             if (checkedId != -1) {
@@ -188,7 +186,7 @@ public class GivenFragment extends Fragment {
                     nameInput.setText("");
                     amountInput.setText("");
                     noteInput.setText("");
-                    categoryGroup.clearCheck();   // clear selection after add
+                    categoryGroup.clearCheck();
                     notifySummaryUpdate();
                     updateBalanceList();
 
@@ -229,7 +227,7 @@ public class GivenFragment extends Fragment {
         menu.show();
     }
 
-    // Dialog to create a new BC scheme
+    // Dialog to create a new BC scheme + INSTALLMENT options
     private void showAddBcDialog() {
         LinearLayout root = new LinearLayout(getContext());
         root.setOrientation(LinearLayout.VERTICAL);
@@ -266,6 +264,115 @@ public class GivenFragment extends Fragment {
         });
         root.addView(etStartDate);
 
+        // INSTALLMENT: label
+        TextView instLabel = new TextView(getContext());
+        instLabel.setText("Installment Option");
+        instLabel.setPadding(0, dpToPx(8), 0, dpToPx(4));
+        root.addView(instLabel);
+
+        // INSTALLMENT: two buttons
+        LinearLayout instLayout = new LinearLayout(getContext());
+        instLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+        Button btnFixed = new Button(getContext());
+        btnFixed.setText("Fixed Amount Installment");
+        instLayout.addView(btnFixed);
+
+        Button btnRandom = new Button(getContext());
+        btnRandom.setText("Random Amount Installment");
+        instLayout.addView(btnRandom);
+
+        root.addView(instLayout);
+
+        // INSTALLMENT: holders for choice
+        final String[] instType = new String[] { "NONE" };   // "FIXED" / "RANDOM" / "NONE"
+        final int[] fixedAmountHolder = new int[] { 0 };
+        final List<Integer> randomAmountsHolder = new ArrayList<>();
+
+        // INSTALLMENT: Fixed amount dialog
+        btnFixed.setOnClickListener(v2 -> {
+            final EditText input = new EditText(getContext());
+            input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+            input.setHint("Installment amount");
+
+            new android.app.AlertDialog.Builder(getContext())
+                    .setTitle("Fixed Amount Installment")
+                    .setView(input)
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("OK", (d, w) -> {
+                        String amtStr = input.getText().toString().trim();
+                        try {
+                            int val = Integer.parseInt(amtStr);
+                            instType[0] = "FIXED";
+                            fixedAmountHolder[0] = val;
+                            randomAmountsHolder.clear();
+                            Toast.makeText(getContext(),
+                                    "Fixed installment set: ₹" + val,
+                                    Toast.LENGTH_SHORT).show();
+                        } catch (NumberFormatException e) {
+                            Toast.makeText(getContext(), "Invalid amount", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .show();
+        });
+
+        // INSTALLMENT: Random amounts dialog
+        btnRandom.setOnClickListener(v2 -> {
+            String monthsStr = etMonths.getText().toString().trim();
+            int m;
+            try {
+                m = Integer.parseInt(monthsStr);
+            } catch (NumberFormatException e) {
+                Toast.makeText(getContext(), "Enter Months first", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (m <= 0) {
+                Toast.makeText(getContext(), "Months must be > 0", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            ScrollView scroll = new ScrollView(getContext());
+            LinearLayout listLayout = new LinearLayout(getContext());
+            listLayout.setOrientation(LinearLayout.VERTICAL);
+            scroll.addView(listLayout);
+
+            EditText[] amountInputs = new EditText[m];
+            for (int i = 0; i < m; i++) {
+                EditText et = new EditText(getContext());
+                et.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+                et.setHint((i + 1) + " installment amount");
+                listLayout.addView(et);
+                amountInputs[i] = et;
+            }
+
+            new android.app.AlertDialog.Builder(getContext())
+                    .setTitle("Random Amount Installments")
+                    .setView(scroll)
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("OK", (d, w) -> {
+                        List<Integer> list = new ArrayList<>();
+                        for (int i = 0; i < m; i++) {
+                            String s = amountInputs[i].getText().toString().trim();
+                            try {
+                                list.add(Integer.parseInt(s));
+                            } catch (NumberFormatException e) {
+                                Toast.makeText(getContext(),
+                                        "Invalid amount at position " + (i + 1),
+                                        Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                        }
+                        instType[0] = "RANDOM";
+                        fixedAmountHolder[0] = 0;
+                        randomAmountsHolder.clear();
+                        randomAmountsHolder.addAll(list);
+                        Toast.makeText(getContext(),
+                                "Random installments set",
+                                Toast.LENGTH_SHORT).show();
+                    })
+                    .show();
+        });
+
         new android.app.AlertDialog.Builder(getContext())
                 .setTitle("Add BC Scheme")
                 .setView(root)
@@ -299,9 +406,23 @@ public class GivenFragment extends Fragment {
                     scheme.startDate = startDate;
                     generateBcSchedule(scheme);  // fill scheduleDates
 
+                    // INSTALLMENT: copy user choice into scheme
+                    scheme.installmentType = instType[0];
+                    if ("FIXED".equals(instType[0])) {
+                        scheme.fixedAmount = fixedAmountHolder[0];
+                        scheme.monthlyAmounts.clear();
+                    } else if ("RANDOM".equals(instType[0])) {
+                        scheme.fixedAmount = 0;
+                        scheme.monthlyAmounts.clear();
+                        scheme.monthlyAmounts.addAll(randomAmountsHolder);
+                    } else {
+                        scheme.fixedAmount = 0;
+                        scheme.monthlyAmounts.clear();
+                    }
+
                     String key = TextUtils.isEmpty(accountName) ? "_GLOBAL_" : accountName;
-                    BcStore.addScheme(key, scheme);      // BcStore
-                    BcStore.save(getContext());          // BcStore
+                    BcStore.addScheme(key, scheme);
+                    BcStore.save(getContext());
 
                     Toast.makeText(getContext(), "BC added", Toast.LENGTH_SHORT).show();
                 })
@@ -326,7 +447,7 @@ public class GivenFragment extends Fragment {
 
     // List all BC schemes and open details
     private void showBcListDialog() {
-        HashMap<String, ArrayList<BcScheme>> bcMap = BcStore.getBcMap();   // BcStore
+        HashMap<String, ArrayList<BcScheme>> bcMap = BcStore.getBcMap();
 
         if (bcMap.isEmpty()) {
             Toast.makeText(getContext(), "No BC schemes added", Toast.LENGTH_SHORT).show();
@@ -359,7 +480,7 @@ public class GivenFragment extends Fragment {
                 .show();
     }
 
-    // Show one BC scheme with its schedule dates
+    // Show one BC scheme with its schedule dates and installment amounts
     private void showBcDetailsDialog(BcScheme scheme) {
         ScrollView scrollView = new ScrollView(getContext());
         LinearLayout container = new LinearLayout(getContext());
@@ -367,9 +488,19 @@ public class GivenFragment extends Fragment {
         container.setPadding(dpToPx(16), dpToPx(8), dpToPx(16), dpToPx(8));
         scrollView.addView(container);
 
-        for (String date : scheme.scheduleDates) {
+        for (int i = 0; i < scheme.scheduleDates.size(); i++) {
+            String date = scheme.scheduleDates.get(i);
+            String amountText = "";
+
+            if ("FIXED".equals(scheme.installmentType)) {
+                amountText = "  ₹" + scheme.fixedAmount;
+            } else if ("RANDOM".equals(scheme.installmentType)
+                    && i < scheme.monthlyAmounts.size()) {
+                amountText = "  ₹" + scheme.monthlyAmounts.get(i);
+            }
+
             TextView tv = new TextView(getContext());
-            tv.setText("□ " + date);
+            tv.setText("□ " + date + amountText);
             tv.setTextSize(14);
             tv.setPadding(0, dpToPx(4), 0, dpToPx(4));
             container.addView(tv);
