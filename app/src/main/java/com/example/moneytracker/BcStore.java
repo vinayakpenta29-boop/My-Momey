@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 public class BcStore {
 
@@ -22,6 +21,14 @@ public class BcStore {
         public int months;
         public String startDate;              // dd/MM/yyyy
         public List<String> scheduleDates = new ArrayList<>();
+
+        // Installment info
+        // "FIXED" -> use fixedAmount for all months
+        // "RANDOM" -> use monthlyAmounts[i] for month i
+        // "NONE" -> no amount info
+        public String installmentType = "NONE";
+        public int fixedAmount = 0;
+        public List<Integer> monthlyAmounts = new ArrayList<>();
     }
 
     private static final String PREFS_NAME = "MoneyTrackerPrefs";
@@ -58,11 +65,23 @@ public class BcStore {
                     o.put("name", s.name);
                     o.put("months", s.months);
                     o.put("startDate", s.startDate);
+
+                    // schedule dates
                     JSONArray dates = new JSONArray();
                     for (String d : s.scheduleDates) {
                         dates.put(d);
                     }
                     o.put("schedule", dates);
+
+                    // installment fields
+                    o.put("installmentType", s.installmentType);
+                    o.put("fixedAmount", s.fixedAmount);
+                    JSONArray amts = new JSONArray();
+                    for (int a : s.monthlyAmounts) {
+                        amts.put(a);
+                    }
+                    o.put("monthlyAmounts", amts);
+
                     arr.put(o);
                 }
                 root.put(key, arr);
@@ -95,6 +114,8 @@ public class BcStore {
                     s.name = o.optString("name");
                     s.months = o.optInt("months");
                     s.startDate = o.optString("startDate");
+
+                    // schedule dates
                     s.scheduleDates = new ArrayList<>();
                     JSONArray dates = o.optJSONArray("schedule");
                     if (dates != null) {
@@ -102,6 +123,18 @@ public class BcStore {
                             s.scheduleDates.add(dates.getString(j));
                         }
                     }
+
+                    // installment fields
+                    s.installmentType = o.optString("installmentType", "NONE");
+                    s.fixedAmount = o.optInt("fixedAmount", 0);
+                    s.monthlyAmounts = new ArrayList<>();
+                    JSONArray amts = o.optJSONArray("monthlyAmounts");
+                    if (amts != null) {
+                        for (int j = 0; j < amts.length(); j++) {
+                            s.monthlyAmounts.add(amts.getInt(j));
+                        }
+                    }
+
                     list.add(s);
                 }
                 bcMap.put(key, list);
