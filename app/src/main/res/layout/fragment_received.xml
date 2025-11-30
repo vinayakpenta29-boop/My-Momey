@@ -116,6 +116,28 @@
         </RadioGroup>
     </LinearLayout>
 
+    <!-- Belongs to BC (shown only when BC category selected) -->
+    <TextView
+        android:id="@+id/tvBelongsToBc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Belongs to BC"
+        android:textSize="14sp"
+        android:textColor="#555555"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:visibility="gone" />
+
+    <Spinner
+        android:id="@+id/spinnerBelongsToBc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/rounded_box_dark"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:visibility="gone" />
+
     <Button
         android:id="@+id/buttonAdd"
         android:layout_width="match_parent"
