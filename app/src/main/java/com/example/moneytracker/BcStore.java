@@ -22,6 +22,12 @@ public class BcStore {
         public String startDate;              // dd/MM/yyyy
         public List<String> scheduleDates = new ArrayList<>();
 
+        // Unique id used by "Belongs to BC" spinner: key + "|" + name
+        public String id = "";
+
+        // Dates when installments are marked as paid (entry added)
+        public List<String> paidDates = new ArrayList<>();
+
         // Installment info
         // "FIXED" -> use fixedAmount for all months
         // "RANDOM" -> use monthlyAmounts[i] for month i
@@ -49,10 +55,31 @@ public class BcStore {
             list = new ArrayList<>();
             bcMap.put(key, list);
         }
+        // build stable id if not set
+        if (TextUtils.isEmpty(scheme.id)) {
+            scheme.id = key + "|" + scheme.name;
+        }
         list.add(scheme);
     }
 
-    // Save all BC schemes to SharedPreferences (call after Add / Delete)
+    // Helper: mark one installment as done for given scheme id and date
+    public static void markBcInstallmentDone(String bcId, String date) {
+        if (TextUtils.isEmpty(bcId) || TextUtils.isEmpty(date)) return;
+        for (String key : bcMap.keySet()) {
+            ArrayList<BcScheme> list = bcMap.get(key);
+            if (list == null) continue;
+            for (BcScheme s : list) {
+                if (bcId.equals(s.id)) {
+                    if (!s.paidDates.contains(date)) {
+                        s.paidDates.add(date);
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+    // Save all BC schemes to SharedPreferences (call after Add / Delete / mark done)
     public static void save(Context context) {
         JSONObject root = new JSONObject();
         try {
@@ -66,12 +93,25 @@ public class BcStore {
                     o.put("months", s.months);
                     o.put("startDate", s.startDate);
 
+                    // id
+                    if (TextUtils.isEmpty(s.id)) {
+                        s.id = key + "|" + s.name;
+                    }
+                    o.put("id", s.id);
+
                     // schedule dates
                     JSONArray dates = new JSONArray();
                     for (String d : s.scheduleDates) {
                         dates.put(d);
                     }
                     o.put("schedule", dates);
+
+                    // paid dates
+                    JSONArray paid = new JSONArray();
+                    for (String d : s.paidDates) {
+                        paid.put(d);
+                    }
+                    o.put("paidDates", paid);
 
                     // installment fields
                     o.put("installmentType", s.installmentType);
@@ -114,6 +154,7 @@ public class BcStore {
                     s.name = o.optString("name");
                     s.months = o.optInt("months");
                     s.startDate = o.optString("startDate");
+                    s.id = o.optString("id", key + "|" + s.name);
 
                     // schedule dates
                     s.scheduleDates = new ArrayList<>();
@@ -121,6 +162,15 @@ public class BcStore {
                     if (dates != null) {
                         for (int j = 0; j < dates.length(); j++) {
                             s.scheduleDates.add(dates.getString(j));
+                        }
+                    }
+
+                    // paid dates
+                    s.paidDates = new ArrayList<>();
+                    JSONArray paid = o.optJSONArray("paidDates");
+                    if (paid != null) {
+                        for (int j = 0; j < paid.length(); j++) {
+                            s.paidDates.add(paid.getString(j));
                         }
                     }
 
