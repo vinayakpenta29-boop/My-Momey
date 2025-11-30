@@ -305,7 +305,7 @@ public class BcUiHelper {
                 .show();
     }
 
-    // Detail dialog with dates + amounts
+    // Detail dialog with dates + amounts + auto-tick using paidDates
     public static void showBcDetailsDialog(Fragment fragment, BcScheme scheme) {
         Context ctx = fragment.requireContext();
         ScrollView scrollView = new ScrollView(ctx);
@@ -326,8 +326,12 @@ public class BcUiHelper {
                 amountText = "  ₹" + scheme.monthlyAmounts.get(i);
             }
 
+            boolean done = scheme.paidDates != null && scheme.paidDates.contains(date);
+            String box = done ? "☑ " : "☐ ";
+            String rightDate = done ? "   " + date : "";
+
             TextView tv = new TextView(ctx);
-            tv.setText("□ " + date + amountText);
+            tv.setText(box + date + amountText + rightDate);
             tv.setTextSize(14);
             tv.setPadding(0, dpToPx(fragment, 4), 0, dpToPx(fragment, 4));
             container.addView(tv);
