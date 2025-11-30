@@ -16,6 +16,8 @@ import android.widget.PopupMenu;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,23 +41,30 @@ public class ReceivedFragment extends Fragment {
     private LinearLayout layoutBalanceList;
     private ImageButton btnMoreTopReceived;
 
+    // Belongs-to-BC UI
+    private TextView tvBelongsToBc;
+    private Spinner spinnerBelongsToBc;
+
     public static class Entry implements EntryBase {
         public int amount;
         public String note;
         public String date;
         public String category;
+        public String bcKey;      // optional BC scheme id
 
-        public Entry(int amount, String note, String date, String category) {
+        public Entry(int amount, String note, String date, String category, String bcKey) {
             this.amount = amount;
             this.note = note;
             this.date = date;
             this.category = category;
+            this.bcKey = bcKey;
         }
 
         @Override public int getAmount() { return amount; }
         @Override public String getNote() { return note; }
         @Override public String getDate() { return date; }
         public String getCategory() { return category; }
+        public String getBcKey() { return bcKey; }
 
         public JSONObject toJSON() throws JSONException {
             JSONObject obj = new JSONObject();
@@ -63,6 +72,7 @@ public class ReceivedFragment extends Fragment {
             obj.put("note", note);
             obj.put("date", date);
             obj.put("category", category);
+            obj.put("bcKey", bcKey);
             return obj;
         }
 
@@ -71,7 +81,8 @@ public class ReceivedFragment extends Fragment {
                     obj.getInt("amount"),
                     obj.optString("note"),
                     obj.optString("date"),
-                    obj.has("category") ? obj.getString("category") : ""
+                    obj.has("category") ? obj.getString("category") : "",
+                    obj.optString("bcKey", "")
             );
         }
     }
@@ -135,22 +146,44 @@ public class ReceivedFragment extends Fragment {
         categoryGroup = v.findViewById(R.id.radioGroupCategory);
         btnMoreTopReceived = v.findViewById(R.id.btnMoreTopReceived);
 
+        tvBelongsToBc = v.findViewById(R.id.tvBelongsToBc);
+        spinnerBelongsToBc = v.findViewById(R.id.spinnerBelongsToBc);
+
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
 
         if (btnMoreTopReceived != null) {
-            btnMoreTopReceived.setOnClickListener(a -> BcUiHelper.showBcManagerMenu(this, a));
+            btnMoreTopReceived.setOnClickListener(a -> {
+                BcUiHelper.showBcManagerMenu(this, a);
+                updateBcSpinner();
+            });
         }
+
+        updateBcSpinner();
 
         categoryGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             private int lastCheckedId = -1;
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (checkedId == -1) return;
+                if (checkedId == -1) {
+                    lastCheckedId = -1;
+                    tvBelongsToBc.setVisibility(View.GONE);
+                    spinnerBelongsToBc.setVisibility(View.GONE);
+                    return;
+                }
                 if (checkedId == lastCheckedId) {
                     group.clearCheck();
                     lastCheckedId = -1;
+                    tvBelongsToBc.setVisibility(View.GONE);
+                    spinnerBelongsToBc.setVisibility(View.GONE);
                 } else {
                     lastCheckedId = checkedId;
+                    RadioButton rb = group.findViewById(checkedId);
+                    boolean isBc = rb != null && "BC".equalsIgnoreCase(rb.getText().toString());
+                    tvBelongsToBc.setVisibility(isBc ? View.VISIBLE : View.GONE);
+                    spinnerBelongsToBc.setVisibility(isBc ? View.VISIBLE : View.GONE);
+                    if (isBc) {
+                        updateBcSpinner();
+                    }
                 }
             }
         });
@@ -159,6 +192,30 @@ public class ReceivedFragment extends Fragment {
 
         updateBalanceList();
         return v;
+    }
+
+    private void updateBcSpinner() {
+        if (spinnerBelongsToBc == null) return;
+        HashMap<String, ArrayList<BcScheme>> bcMap = BcStore.getBcMap();
+        List<String> labels = new ArrayList<>();
+        for (String key : bcMap.keySet()) {
+            ArrayList<BcScheme> list = bcMap.get(key);
+            if (list == null) continue;
+            for (BcScheme s : list) {
+                if (TextUtils.isEmpty(s.id)) {
+                    s.id = key + "|" + s.name;
+                }
+                labels.add(s.id);
+            }
+        }
+        if (labels.isEmpty()) {
+            spinnerBelongsToBc.setAdapter(null);
+            return;
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(), android.R.layout.simple_spinner_item, labels);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerBelongsToBc.setAdapter(adapter);
     }
 
     private void addReceivedEntry(View rootView) {
@@ -173,15 +230,28 @@ public class ReceivedFragment extends Fragment {
             category = selected.getText().toString();   // "Interest", "EMI", "BC"
         }
 
+        String bcKey = "";
+        if ("BC".equalsIgnoreCase(category) &&
+                spinnerBelongsToBc.getVisibility() == View.VISIBLE &&
+                spinnerBelongsToBc.getSelectedItem() != null) {
+            bcKey = spinnerBelongsToBc.getSelectedItem().toString();
+        }
+
         if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(amountStr)) {
             try {
                 int amount = Integer.parseInt(amountStr);
                 String dateStr = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
-                Entry entry = new Entry(amount, noteStr, dateStr, category);
+                Entry entry = new Entry(amount, noteStr, dateStr, category, bcKey);
                 if (!receivedMap.containsKey(name)) {
                     receivedMap.put(name, new ArrayList<>());
                 }
                 receivedMap.get(name).add(entry);
+
+                if (!TextUtils.isEmpty(bcKey)) {
+                    BcStore.markBcInstallmentDone(bcKey, dateStr);
+                    BcStore.save(getContext());
+                }
+
                 saveMap(getContext());
                 Toast.makeText(getContext(), "Added " + name + ": ₹" + amount,
                         Toast.LENGTH_SHORT).show();
@@ -189,6 +259,8 @@ public class ReceivedFragment extends Fragment {
                 amountInput.setText("");
                 noteInput.setText("");
                 categoryGroup.clearCheck();
+                tvBelongsToBc.setVisibility(View.GONE);
+                spinnerBelongsToBc.setVisibility(View.GONE);
                 notifySummaryUpdate();
                 updateBalanceList();
 
