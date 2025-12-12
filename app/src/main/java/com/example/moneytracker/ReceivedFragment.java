@@ -152,6 +152,7 @@ public class ReceivedFragment extends Fragment {
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
 
         if (btnMoreTopReceived != null) {
+            btnMoreTopGiven.setColorFilter(0xFF000000); // black
             btnMoreTopReceived.setOnClickListener(a -> {
                 BcUiHelper.showBcManagerMenu(this, a);
                 updateBcSpinner();
