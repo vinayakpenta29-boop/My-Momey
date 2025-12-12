@@ -15,7 +15,7 @@ import java.util.List;
 
 public class EmiStore {
 
-    // One BC scheme
+    // One EMI scheme
     public static class EmiScheme {
         public String name;
         public int months;
@@ -49,8 +49,8 @@ public class EmiStore {
     }
 
     // Add a scheme under an account key
-    public static void addScheme(String key, BcScheme scheme) {
-        ArrayList<BcScheme> list = bcMap.get(key);
+    public static void addScheme(String key, EmiScheme scheme) {
+        ArrayList<EmiScheme> list = emiMap.get(key);
         if (list == null) {
             list = new ArrayList<>();
             emiMap.put(key, list);
@@ -79,7 +79,7 @@ public class EmiStore {
         }
     }
 
-    // Save all BC schemes to SharedPreferences (call after Add / Delete / mark done)
+    // Save all EMI schemes to SharedPreferences
     public static void save(Context context) {
         JSONObject root = new JSONObject();
         try {
@@ -130,14 +130,16 @@ public class EmiStore {
             e.printStackTrace();
         }
 
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs =
+                context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString(EMI_KEY, root.toString()).apply();
     }
 
-    // Load EMI schemes from SharedPreferences (call once in onCreateView of fragments)
+    // Load EMI schemes from SharedPreferences
     public static void load(Context context) {
         emiMap.clear();
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs =
+                context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String json = prefs.getString(EMI_KEY, "");
         if (TextUtils.isEmpty(json)) return;
 
