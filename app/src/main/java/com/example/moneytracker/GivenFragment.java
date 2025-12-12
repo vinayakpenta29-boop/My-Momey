@@ -152,6 +152,7 @@ public class GivenFragment extends Fragment {
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
 
         if (btnMoreTopGiven != null) {
+            btnMoreTopGiven.setColorFilter(0xFF000000); // black
             btnMoreTopGiven.setOnClickListener(a -> {
                 BcUiHelper.showBcManagerMenu(this, a);
                 // Refresh spinner after BC list might change
