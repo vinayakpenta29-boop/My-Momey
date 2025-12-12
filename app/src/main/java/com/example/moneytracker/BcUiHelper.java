@@ -40,12 +40,18 @@ public class BcUiHelper {
         android.widget.PopupMenu menu = new android.widget.PopupMenu(fragment.getContext(), anchor);
         menu.getMenu().add("Add BC");
         menu.getMenu().add("View BC List");
+        menu.getMenu().add("Add EMI");
+        menu.getMenu().add("View EMI List");
         menu.setOnMenuItemClickListener(item -> {
             String title = item.getTitle().toString();
             if ("Add BC".equals(title)) {
                 showAddBcDialog(fragment, null);
             } else if ("View BC List".equals(title)) {
                 showBcListDialog(fragment);
+            } else if ("Add EMI".equals(title)) {
+                EmiUiHelper.showAddEmiDialog(fragment, null);
+            } else if ("View EMI List".equals(title)) {
+                EmiUiHelper.showEmiListDialog(fragment);
             }
             return true;
         });
