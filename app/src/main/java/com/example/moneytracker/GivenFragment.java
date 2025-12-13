@@ -430,7 +430,7 @@ public class GivenFragment extends Fragment {
             moreParams.setMargins(UiUtils.dpToPx(getContext(), 8), 0, 0, 0);
             morePerson.setLayoutParams(moreParams);
             morePerson.setImageResource(R.drawable.ic_more_vert);
-            morePerson.setColorFilter(0xFF000000);   // make three dots black
+            morePerson.setColorFilter(0xFFCCCCCC);   // make three dots black
             row.addView(morePerson);
 
             morePerson.setOnClickListener(v -> showPersonMenu(v, name));
