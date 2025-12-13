@@ -11,6 +11,8 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 
 import androidx.fragment.app.Fragment;
 
