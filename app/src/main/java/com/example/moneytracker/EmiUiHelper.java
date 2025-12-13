@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.Gravity;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -11,6 +12,8 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 
 import androidx.fragment.app.Fragment;
 
@@ -308,40 +311,92 @@ public class EmiUiHelper {
                 .show();
     }
 
-    // Detail dialog with dates + amounts + auto-tick using paidCount
+    // Detail dialog with dates + amounts + auto-tick using paidCount, shown as table
     public static void showEmiDetailsDialog(Fragment fragment, EmiScheme scheme) {
         Context ctx = fragment.requireContext();
-        ScrollView scrollView = new ScrollView(ctx);
-        LinearLayout container = new LinearLayout(ctx);
-        container.setOrientation(LinearLayout.VERTICAL);
-        container.setPadding(dpToPx(fragment, 16), dpToPx(fragment, 8),
-                dpToPx(fragment, 16), dpToPx(fragment, 8));
-        scrollView.addView(container);
+
+        TableLayout table = new TableLayout(ctx);
+        table.setStretchAllColumns(true);
+        int pad = dpToPx(fragment, 8);
+        table.setPadding(pad, pad, pad, pad);
+
+        // Header row
+        TableRow header = new TableRow(ctx);
+        int cellPad = dpToPx(fragment, 4);
+
+        TextView hStatus = new TextView(ctx);
+        hStatus.setText("Status");
+        hStatus.setTypeface(null, android.graphics.Typeface.BOLD);
+        hStatus.setGravity(Gravity.CENTER);
+        hStatus.setPadding(cellPad, cellPad, cellPad, cellPad);
+        header.addView(hStatus);
+
+        TextView hDate = new TextView(ctx);
+        hDate.setText("Date");
+        hDate.setTypeface(null, android.graphics.Typeface.BOLD);
+        hDate.setGravity(Gravity.CENTER);
+        hDate.setPadding(cellPad, cellPad, cellPad, cellPad);
+        header.addView(hDate);
+
+        TextView hAmt = new TextView(ctx);
+        hAmt.setText("Amount");
+        hAmt.setTypeface(null, android.graphics.Typeface.BOLD);
+        hAmt.setGravity(Gravity.CENTER);
+        hAmt.setPadding(cellPad, cellPad, cellPad, cellPad);
+        header.addView(hAmt);
+
+        table.addView(header);
+
+        // Data rows
+        TableRow.LayoutParams cellParams = new TableRow.LayoutParams(
+                0, TableRow.LayoutParams.WRAP_CONTENT, 1f);
 
         for (int i = 0; i < scheme.scheduleDates.size(); i++) {
             String date = scheme.scheduleDates.get(i);
-            String amountText = "";
-
+            int amount = 0;
             if ("FIXED".equals(scheme.installmentType)) {
-                amountText = "  ₹" + scheme.fixedAmount;
+                amount = scheme.fixedAmount;
             } else if ("RANDOM".equals(scheme.installmentType)
                     && i < scheme.monthlyAmounts.size()) {
-                amountText = "  ₹" + scheme.monthlyAmounts.get(i);
+                amount = scheme.monthlyAmounts.get(i);
             }
 
-            boolean done = i < scheme.paidCount;          // first paidCount installments ticked
-            String prefix = done ? "✅ " : "☐ ";
+            boolean done = i < scheme.paidCount;
 
-            TextView tv = new TextView(ctx);
-            tv.setText(prefix + date + amountText);
-            if (done) {
-                tv.setTextColor(0xFF2E7D32);              // green text for paid
-            }
-            tv.setTextSize(14);
-            tv.setTypeface(null, android.graphics.Typeface.BOLD);
-            tv.setPadding(0, dpToPx(fragment, 4), 0, dpToPx(fragment, 4));
-            container.addView(tv);
+            TableRow row = new TableRow(ctx);
+
+            // Status cell
+            TextView tvStatus = new TextView(ctx);
+            tvStatus.setText(done ? "✅" : "☐");
+            if (done) tvStatus.setTextColor(0xFF2E7D32);
+            tvStatus.setGravity(Gravity.CENTER);
+            tvStatus.setPadding(cellPad, cellPad, cellPad, cellPad);
+            tvStatus.setLayoutParams(new TableRow.LayoutParams(cellParams));
+            row.addView(tvStatus);
+
+            // Date cell
+            TextView tvDate = new TextView(ctx);
+            tvDate.setText(date);
+            tvDate.setTypeface(null, android.graphics.Typeface.BOLD);
+            tvDate.setGravity(Gravity.CENTER);
+            tvDate.setPadding(cellPad, cellPad, cellPad, cellPad);
+            tvDate.setLayoutParams(new TableRow.LayoutParams(cellParams));
+            row.addView(tvDate);
+
+            // Amount cell
+            TextView tvAmt = new TextView(ctx);
+            tvAmt.setText(String.valueOf(amount));
+            tvAmt.setTypeface(null, android.graphics.Typeface.BOLD);
+            tvAmt.setGravity(Gravity.CENTER);
+            tvAmt.setPadding(cellPad, cellPad, cellPad, cellPad);
+            tvAmt.setLayoutParams(new TableRow.LayoutParams(cellParams));
+            row.addView(tvAmt);
+
+            table.addView(row);
         }
+
+        ScrollView scrollView = new ScrollView(ctx);
+        scrollView.addView(table);
 
         new android.app.AlertDialog.Builder(ctx)
                 .setTitle("EMI: " + scheme.name)
