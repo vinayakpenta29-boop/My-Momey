@@ -35,9 +35,10 @@ public class BcUiHelper {
         return Math.round(dp * density);
     }
 
-    // Public entry: show BC main menu for any fragment
+    // Public entry: show BC + EMI main menu for any fragment
     public static void showBcManagerMenu(Fragment fragment, View anchor) {
-        android.widget.PopupMenu menu = new android.widget.PopupMenu(fragment.getContext(), anchor);
+        android.widget.PopupMenu menu =
+                new android.widget.PopupMenu(fragment.getContext(), anchor);
         menu.getMenu().add("Add BC");
         menu.getMenu().add("View BC List");
         menu.getMenu().add("Add EMI");
@@ -92,7 +93,9 @@ public class BcUiHelper {
                                 "%02d/%02d/%04d", dayOfMonth, month + 1, year);
                         etStartDate.setText(d);
                     },
-                    c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+                    c.get(Calendar.YEAR),
+                    c.get(Calendar.MONTH),
+                    c.get(Calendar.DAY_OF_MONTH));
             dp.show();
         });
         root.addView(etStartDate);
@@ -117,8 +120,8 @@ public class BcUiHelper {
 
         root.addView(instLayout);
 
-        final String[] instType = new String[] { "NONE" };  // FIXED / RANDOM / NONE
-        final int[] fixedAmountHolder = new int[] { 0 };
+        final String[] instType = new String[]{"NONE"};  // FIXED / RANDOM / NONE
+        final int[] fixedAmountHolder = new int[]{0};
         final List<Integer> randomAmountsHolder = new ArrayList<>();
 
         // Fixed dialog
@@ -311,7 +314,7 @@ public class BcUiHelper {
                 .show();
     }
 
-    // Detail dialog with dates + amounts + auto-tick using paidDates
+    // Detail dialog with dates + amounts + auto-tick using paidCount
     public static void showBcDetailsDialog(Fragment fragment, BcScheme scheme) {
         Context ctx = fragment.requireContext();
         ScrollView scrollView = new ScrollView(ctx);
@@ -332,12 +335,11 @@ public class BcUiHelper {
                 amountText = "  ₹" + scheme.monthlyAmounts.get(i);
             }
 
-            boolean done = scheme.paidDates != null && scheme.paidDates.contains(date);
+            boolean done = i < scheme.paidCount;   // first paidCount installments are ticked
             String box = done ? "☑ " : "☐ ";
-            String rightDate = done ? "   " + date : "";
 
             TextView tv = new TextView(ctx);
-            tv.setText(box + date + amountText + rightDate);
+            tv.setText(box + date + amountText);
             tv.setTextSize(14);
             tv.setPadding(0, dpToPx(fragment, 4), 0, dpToPx(fragment, 4));
             container.addView(tv);
