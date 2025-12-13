@@ -333,7 +333,10 @@ public class EmiUiHelper {
             String box = done ? "☑ " : "☐ ";
 
             TextView tv = new TextView(ctx);
-            tv.setText(box + date + amountText);
+            tv.setText(prefix + date + amountText);
+            if (done) {
+                tv.setTextColor(0xFF2E7D32);              // green text for paid
+            }
             tv.setTextSize(14);
             tv.setPadding(0, dpToPx(fragment, 4), 0, dpToPx(fragment, 4));
             container.addView(tv);
