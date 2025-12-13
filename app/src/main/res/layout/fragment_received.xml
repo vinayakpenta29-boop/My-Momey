@@ -21,7 +21,8 @@
             android:layout_height="32dp"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_more_vert"
-            android:contentDescription="More BC options" />
+            android:contentDescription="More BC options"
+            android:tint="#000000" />
     </LinearLayout>
 
     <EditText
