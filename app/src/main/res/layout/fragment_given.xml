@@ -24,7 +24,8 @@
             android:layout_height="32dp"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_more_vert"
-            android:contentDescription="More BC options" />
+            android:contentDescription="More BC options"
+            android:tint="#000000" />
     </LinearLayout>
 
     <EditText
@@ -133,6 +134,28 @@
 
     <Spinner
         android:id="@+id/spinnerBelongsToBc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/rounded_box_dark"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:visibility="gone" />
+
+    <!-- Belongs to EMI (shown only when EMI category selected) -->
+    <TextView
+        android:id="@+id/tvBelongsToEmi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Belongs to EMI"
+        android:textSize="14sp"
+        android:textColor="#555555"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:visibility="gone" />
+
+    <Spinner
+        android:id="@+id/spinnerBelongsToEmi"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
