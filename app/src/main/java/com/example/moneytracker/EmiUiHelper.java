@@ -338,6 +338,7 @@ public class EmiUiHelper {
                 tv.setTextColor(0xFF2E7D32);              // green text for paid
             }
             tv.setTextSize(14);
+            tv.setTypeface(null, android.graphics.Typeface.BOLD);
             tv.setPadding(0, dpToPx(fragment, 4), 0, dpToPx(fragment, 4));
             container.addView(tv);
         }
