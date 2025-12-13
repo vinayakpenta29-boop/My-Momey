@@ -30,8 +30,8 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import com.example.moneytracker.BcStore;
 import com.example.moneytracker.BcStore.BcScheme;
+import com.example.moneytracker.EmiStore.EmiScheme;
 
 public class GivenFragment extends Fragment {
 
@@ -41,23 +41,28 @@ public class GivenFragment extends Fragment {
     private RadioGroup categoryGroup;
     private ImageButton btnMoreTopGiven;
 
-    // Belongs-to-BC UI
+    // Belongs-to-BC / EMI UI
     private TextView tvBelongsToBc;
     private Spinner spinnerBelongsToBc;
+    private TextView tvBelongsToEmi;
+    private Spinner spinnerBelongsToEmi;
 
     public static class Entry implements EntryBase {
         public int amount;
         public String note;
         public String date;
         public String category;   // "", "Interest", "EMI", "BC"
-        public String bcKey;      // which BC scheme this entry belongs to (id from BcStore), may be ""
+        public String bcKey;      // BC scheme id
+        public String emiKey;     // EMI scheme id
 
-        public Entry(int amount, String note, String date, String category, String bcKey) {
+        public Entry(int amount, String note, String date,
+                     String category, String bcKey, String emiKey) {
             this.amount = amount;
             this.note = note;
             this.date = date;
             this.category = category;
             this.bcKey = bcKey;
+            this.emiKey = emiKey;
         }
 
         @Override public int getAmount() { return amount; }
@@ -65,6 +70,7 @@ public class GivenFragment extends Fragment {
         @Override public String getDate() { return date; }
         public String getCategory() { return category; }
         public String getBcKey() { return bcKey; }
+        public String getEmiKey() { return emiKey; }
 
         public JSONObject toJSON() throws JSONException {
             JSONObject obj = new JSONObject();
@@ -73,6 +79,7 @@ public class GivenFragment extends Fragment {
             obj.put("date", date);
             obj.put("category", category);
             obj.put("bcKey", bcKey);
+            obj.put("emiKey", emiKey);
             return obj;
         }
 
@@ -82,7 +89,8 @@ public class GivenFragment extends Fragment {
                     obj.optString("note"),
                     obj.optString("date"),
                     obj.has("category") ? obj.getString("category") : "",
-                    obj.optString("bcKey", "")
+                    obj.optString("bcKey", ""),
+                    obj.optString("emiKey", "")
             );
         }
     }
@@ -136,6 +144,7 @@ public class GivenFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         loadMap(requireContext());
         BcStore.load(requireContext());
+        EmiStore.load(requireContext());
 
         View v = inflater.inflate(R.layout.fragment_given, container, false);
         nameInput = v.findViewById(R.id.editTextName);
@@ -148,6 +157,8 @@ public class GivenFragment extends Fragment {
 
         tvBelongsToBc = v.findViewById(R.id.tvBelongsToBc);
         spinnerBelongsToBc = v.findViewById(R.id.spinnerBelongsToBc);
+        tvBelongsToEmi = v.findViewById(R.id.tvBelongsToEmi);
+        spinnerBelongsToEmi = v.findViewById(R.id.spinnerBelongsToEmi);
 
         addButton.setBackgroundResource(R.drawable.orange_rounded_button);
 
@@ -155,13 +166,13 @@ public class GivenFragment extends Fragment {
             btnMoreTopGiven.setColorFilter(0xFF000000); // black
             btnMoreTopGiven.setOnClickListener(a -> {
                 BcUiHelper.showBcManagerMenu(this, a);
-                // Refresh spinner after BC list might change
                 updateBcSpinner();
+                updateEmiSpinner();
             });
         }
 
-        // initial spinner content
         updateBcSpinner();
+        updateEmiSpinner();
 
         categoryGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             private int lastCheckedId = -1;
@@ -171,6 +182,8 @@ public class GivenFragment extends Fragment {
                     lastCheckedId = -1;
                     tvBelongsToBc.setVisibility(View.GONE);
                     spinnerBelongsToBc.setVisibility(View.GONE);
+                    tvBelongsToEmi.setVisibility(View.GONE);
+                    spinnerBelongsToEmi.setVisibility(View.GONE);
                     return;
                 }
                 if (checkedId == lastCheckedId) {
@@ -178,15 +191,22 @@ public class GivenFragment extends Fragment {
                     lastCheckedId = -1;
                     tvBelongsToBc.setVisibility(View.GONE);
                     spinnerBelongsToBc.setVisibility(View.GONE);
+                    tvBelongsToEmi.setVisibility(View.GONE);
+                    spinnerBelongsToEmi.setVisibility(View.GONE);
                 } else {
                     lastCheckedId = checkedId;
                     RadioButton rb = group.findViewById(checkedId);
-                    boolean isBc = rb != null && "BC".equalsIgnoreCase(rb.getText().toString());
+                    String txt = rb != null ? rb.getText().toString() : "";
+                    boolean isBc  = "BC".equalsIgnoreCase(txt);
+                    boolean isEmi = "EMI".equalsIgnoreCase(txt);
+
                     tvBelongsToBc.setVisibility(isBc ? View.VISIBLE : View.GONE);
                     spinnerBelongsToBc.setVisibility(isBc ? View.VISIBLE : View.GONE);
-                    if (isBc) {
-                        updateBcSpinner();
-                    }
+                    tvBelongsToEmi.setVisibility(isEmi ? View.VISIBLE : View.GONE);
+                    spinnerBelongsToEmi.setVisibility(isEmi ? View.VISIBLE : View.GONE);
+
+                    if (isBc)  updateBcSpinner();
+                    if (isEmi) updateEmiSpinner();
                 }
             }
         });
@@ -222,6 +242,31 @@ public class GivenFragment extends Fragment {
         spinnerBelongsToBc.setAdapter(adapter);
     }
 
+    // Fill spinner with all EMI scheme ids (key|name)
+    private void updateEmiSpinner() {
+        if (spinnerBelongsToEmi == null) return;
+        HashMap<String, ArrayList<EmiScheme>> emiMap = EmiStore.getEmiMap();
+        List<String> labels = new ArrayList<>();
+        for (String key : emiMap.keySet()) {
+            ArrayList<EmiScheme> list = emiMap.get(key);
+            if (list == null) continue;
+            for (EmiScheme s : list) {
+                if (TextUtils.isEmpty(s.id)) {
+                    s.id = key + "|" + s.name;
+                }
+                labels.add(s.id);
+            }
+        }
+        if (labels.isEmpty()) {
+            spinnerBelongsToEmi.setAdapter(null);
+            return;
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(), android.R.layout.simple_spinner_item, labels);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerBelongsToEmi.setAdapter(adapter);
+    }
+
     private void addGivenEntry() {
         String name = nameInput.getText().toString().trim();
         String amountStr = amountInput.getText().toString().trim();
@@ -234,28 +279,36 @@ public class GivenFragment extends Fragment {
             category = selected.getText().toString();
         }
 
-        // bcKey only when BC selected
         String bcKey = "";
+        String emiKey = "";
         if ("BC".equalsIgnoreCase(category) &&
                 spinnerBelongsToBc.getVisibility() == View.VISIBLE &&
                 spinnerBelongsToBc.getSelectedItem() != null) {
             bcKey = spinnerBelongsToBc.getSelectedItem().toString();
+        } else if ("EMI".equalsIgnoreCase(category) &&
+                spinnerBelongsToEmi.getVisibility() == View.VISIBLE &&
+                spinnerBelongsToEmi.getSelectedItem() != null) {
+            emiKey = spinnerBelongsToEmi.getSelectedItem().toString();
         }
 
         if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(amountStr)) {
             try {
                 int amount = Integer.parseInt(amountStr);
                 String dateStr = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
-                Entry entry = new Entry(amount, noteStr, dateStr, category, bcKey);
+                Entry entry = new Entry(amount, noteStr, dateStr, category, bcKey, emiKey);
                 if (!givenMap.containsKey(name)) {
                     givenMap.put(name, new ArrayList<>());
                 }
                 givenMap.get(name).add(entry);
 
-                // If this is a BC entry linked to a scheme, mark installment done
+                // If this is a BC / EMI entry linked to a scheme, mark installment done
                 if (!TextUtils.isEmpty(bcKey)) {
                     BcStore.markBcInstallmentDone(bcKey, dateStr);
                     BcStore.save(getContext());
+                }
+                if (!TextUtils.isEmpty(emiKey)) {
+                    EmiStore.markEmiInstallmentDone(emiKey, dateStr);
+                    EmiStore.save(getContext());
                 }
 
                 saveMap(getContext());
@@ -267,6 +320,8 @@ public class GivenFragment extends Fragment {
                 categoryGroup.clearCheck();
                 tvBelongsToBc.setVisibility(View.GONE);
                 spinnerBelongsToBc.setVisibility(View.GONE);
+                tvBelongsToEmi.setVisibility(View.GONE);
+                spinnerBelongsToEmi.setVisibility(View.GONE);
                 notifySummaryUpdate();
                 updateBalanceList();
 
