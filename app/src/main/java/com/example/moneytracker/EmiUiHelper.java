@@ -329,8 +329,8 @@ public class EmiUiHelper {
                 amountText = "  ₹" + scheme.monthlyAmounts.get(i);
             }
 
-            boolean done = i < scheme.paidCount;   // first paidCount EMI installments ticked
-            String box = done ? "☑ " : "☐ ";
+            boolean done = i < scheme.paidCount;          // first paidCount installments ticked
+            String prefix = done ? "✅ " : "☐ ";
 
             TextView tv = new TextView(ctx);
             tv.setText(prefix + date + amountText);
