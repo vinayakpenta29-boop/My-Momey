@@ -35,8 +35,7 @@ public class EmiUiHelper {
         return Math.round(dp * density);
     }
 
-    // Public entry: show EMI main menu for any fragment
-    // (Call this from three-dots if you want a separate EMI menu)
+    // Optional separate EMI menu (you already use BC menu that calls EmiUiHelper)
     public static void showEmiManagerMenu(Fragment fragment, View anchor) {
         android.widget.PopupMenu menu =
                 new android.widget.PopupMenu(fragment.getContext(), anchor);
@@ -309,7 +308,7 @@ public class EmiUiHelper {
                 .show();
     }
 
-    // Detail dialog with dates + amounts + auto-tick using paidDates
+    // Detail dialog with dates + amounts + auto-tick using paidCount
     public static void showEmiDetailsDialog(Fragment fragment, EmiScheme scheme) {
         Context ctx = fragment.requireContext();
         ScrollView scrollView = new ScrollView(ctx);
@@ -330,12 +329,11 @@ public class EmiUiHelper {
                 amountText = "  ₹" + scheme.monthlyAmounts.get(i);
             }
 
-            boolean done = scheme.paidDates != null && scheme.paidDates.contains(date);
+            boolean done = i < scheme.paidCount;   // first paidCount EMI installments ticked
             String box = done ? "☑ " : "☐ ";
-            String rightDate = done ? "   " + date : "";
 
             TextView tv = new TextView(ctx);
-            tv.setText(box + date + amountText + rightDate);
+            tv.setText(box + date + amountText);
             tv.setTextSize(14);
             tv.setPadding(0, dpToPx(fragment, 4), 0, dpToPx(fragment, 4));
             container.addView(tv);
