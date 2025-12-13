@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.Gravity;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -316,75 +317,96 @@ public class BcUiHelper {
                 .show();
     }
 
-    // Detail dialog with dates + amounts + auto-tick using paidCount
-    public static void showBcDetailsDialog(Fragment fragment, BcScheme scheme) {
-        Context ctx = fragment.requireContext();
+        // Detail dialog with dates + amounts + auto-tick using paidCount
+        public static void showBcDetailsDialog(Fragment fragment, BcScheme scheme) {
+            Context ctx = fragment.requireContext();
 
-        TableLayout table = new TableLayout(ctx);
-        table.setStretchAllColumns(true);
-        int pad = dpToPx(fragment, 8);
-        table.setPadding(pad, pad, pad, pad);
+            TableLayout table = new TableLayout(ctx);
+            table.setStretchAllColumns(true);
+            int pad = dpToPx(fragment, 8);
+            table.setPadding(pad, pad, pad, pad);
 
-        // Header row
-        TableRow header = new TableRow(ctx);
+            // Header row
+            TableRow header = new TableRow(ctx);
+            int cellPad = dpToPx(fragment, 4);
 
-        TextView hStatus = new TextView(ctx);
-        hStatus.setText("Status");
-        hStatus.setTypeface(null, android.graphics.Typeface.BOLD);
-        header.addView(hStatus);
+            TextView hStatus = new TextView(ctx);
+            hStatus.setText("Status");
+            hStatus.setTypeface(null, android.graphics.Typeface.BOLD);
+            hStatus.setGravity(android.view.Gravity.CENTER);
+            hStatus.setPadding(cellPad, cellPad, cellPad, cellPad);
+            header.addView(hStatus);
 
-        TextView hDate = new TextView(ctx);
-        hDate.setText("Date");
-        hDate.setTypeface(null, android.graphics.Typeface.BOLD);
-        header.addView(hDate);
+            TextView hDate = new TextView(ctx);
+            hDate.setText("Date");
+            hDate.setTypeface(null, android.graphics.Typeface.BOLD);
+            hDate.setGravity(android.view.Gravity.CENTER);
+            hDate.setPadding(cellPad, cellPad, cellPad, cellPad);
+            header.addView(hDate);
 
-        TextView hAmt = new TextView(ctx);
-        hAmt.setText("Amount");
-        hAmt.setTypeface(null, android.graphics.Typeface.BOLD);
-        header.addView(hAmt);
+            TextView hAmt = new TextView(ctx);
+            hAmt.setText("Amount");
+            hAmt.setTypeface(null, android.graphics.Typeface.BOLD);
+            hAmt.setGravity(android.view.Gravity.CENTER);
+            hAmt.setPadding(cellPad, cellPad, cellPad, cellPad);
+            header.addView(hAmt);
 
-        table.addView(header);
+            table.addView(header);
 
-        // Data rows
-        for (int i = 0; i < scheme.scheduleDates.size(); i++) {
-            String date = scheme.scheduleDates.get(i);
-            int amount = 0;
-            if ("FIXED".equals(scheme.installmentType)) {
-                amount = scheme.fixedAmount;
-            } else if ("RANDOM".equals(scheme.installmentType)
-                    && i < scheme.monthlyAmounts.size()) {
-                amount = scheme.monthlyAmounts.get(i);
+            // Data rows
+            for (int i = 0; i < scheme.scheduleDates.size(); i++) {
+                String date = scheme.scheduleDates.get(i);
+                int amount = 0;
+                if ("FIXED".equals(scheme.installmentType)) {
+                    amount = scheme.fixedAmount;
+                } else if ("RANDOM".equals(scheme.installmentType)
+                     && i < scheme.monthlyAmounts.size()) {
+                    amount = scheme.monthlyAmounts.get(i);
+                }
+
+                boolean done = i < scheme.paidCount;
+
+                TableRow row = new TableRow(ctx);
+                TableRow.LayoutParams cellParams = new TableRow.LayoutParams(
+                        0, TableRow.LayoutParams.WRAP_CONTENT, 1f);
+
+                // Status cell
+                TextView tvStatus = new TextView(ctx);
+                tvStatus.setText(done ? "✅" : "☐");
+                if (done) tvStatus.setTextColor(0xFF2E7D32);
+                tvStatus.setGravity(android.view.Gravity.CENTER);
+                tvStatus.setPadding(cellPad, cellPad, cellPad, cellPad);
+                tvStatus.setLayoutParams(new TableRow.LayoutParams(cellParams));
+                row.addView(tvStatus);
+
+                // Date cell
+                TextView tvDate = new TextView(ctx);
+                tvDate.setText(date);
+                tvDate.setTypeface(null, android.graphics.Typeface.BOLD);
+                tvDate.setGravity(android.view.Gravity.CENTER);
+                tvDate.setPadding(cellPad, cellPad, cellPad, cellPad);
+                tvDate.setLayoutParams(new TableRow.LayoutParams(cellParams));
+                row.addView(tvDate);
+
+                // Amount cell
+                TextView tvAmt = new TextView(ctx);
+                tvAmt.setText(String.valueOf(amount));
+                tvAmt.setTypeface(null, android.graphics.Typeface.BOLD);
+                tvAmt.setGravity(android.view.Gravity.CENTER);
+                tvAmt.setPadding(cellPad, cellPad, cellPad, cellPad);
+                tvAmt.setLayoutParams(new TableRow.LayoutParams(cellParams));
+                row.addView(tvAmt);
+
+                table.addView(row);
             }
 
-            boolean done = i < scheme.paidCount;
+            ScrollView scrollView = new ScrollView(ctx);
+            scrollView.addView(table);
 
-            TableRow row = new TableRow(ctx);
-
-            TextView tvStatus = new TextView(ctx);
-            tvStatus.setText(done ? "✅" : "☐");
-            if (done) tvStatus.setTextColor(0xFF2E7D32);
-            row.addView(tvStatus);
-
-            TextView tvDate = new TextView(ctx);
-            tvDate.setText(date);
-            tvDate.setTypeface(null, android.graphics.Typeface.BOLD);
-            row.addView(tvDate);
-
-            TextView tvAmt = new TextView(ctx);
-            tvAmt.setText(String.valueOf(amount));
-            tvAmt.setTypeface(null, android.graphics.Typeface.BOLD);
-            row.addView(tvAmt);
-
-            table.addView(row);
+            new android.app.AlertDialog.Builder(ctx)
+                    .setTitle("BC: " + scheme.name)
+                    .setView(scrollView)
+                    .setPositiveButton("Close", null)
+                    .show();
         }
-
-        ScrollView scrollView = new ScrollView(ctx);
-        scrollView.addView(table);
-
-        new android.app.AlertDialog.Builder(ctx)
-                .setTitle("BC: " + scheme.name)
-                .setView(scrollView)
-                .setPositiveButton("Close", null)
-                .show();
-    }
 }
