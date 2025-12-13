@@ -25,8 +25,8 @@ public class EmiStore {
         // Unique id used by "Belongs to EMI" spinner: key + "|" + name
         public String id = "";
 
-        // Dates when installments are marked as paid (entry added)
-        public List<String> paidDates = new ArrayList<>();
+        // How many installments are paid (tick first paidCount boxes)
+        public int paidCount = 0;
 
         // Installment info
         // "FIXED" -> use fixedAmount for all months
@@ -62,16 +62,17 @@ public class EmiStore {
         list.add(scheme);
     }
 
-    // Helper: mark one installment as done for given scheme id and date
-    public static void markEmiInstallmentDone(String emiId, String date) {
-        if (TextUtils.isEmpty(emiId) || TextUtils.isEmpty(date)) return;
+    // Helper: mark one installment as done for given scheme id
+    // Just increase paidCount, so checkboxes tick in order.
+    public static void markEmiInstallmentDone(String emiId, String unusedDate) {
+        if (TextUtils.isEmpty(emiId)) return;
         for (String key : emiMap.keySet()) {
             ArrayList<EmiScheme> list = emiMap.get(key);
             if (list == null) continue;
             for (EmiScheme s : list) {
                 if (emiId.equals(s.id)) {
-                    if (!s.paidDates.contains(date)) {
-                        s.paidDates.add(date);
+                    if (s.paidCount < s.months) {
+                        s.paidCount++;
                     }
                     return;
                 }
@@ -106,12 +107,8 @@ public class EmiStore {
                     }
                     o.put("schedule", dates);
 
-                    // paid dates
-                    JSONArray paid = new JSONArray();
-                    for (String d : s.paidDates) {
-                        paid.put(d);
-                    }
-                    o.put("paidDates", paid);
+                    // paid count
+                    o.put("paidCount", s.paidCount);
 
                     // installment fields
                     o.put("installmentType", s.installmentType);
@@ -167,14 +164,8 @@ public class EmiStore {
                         }
                     }
 
-                    // paid dates
-                    s.paidDates = new ArrayList<>();
-                    JSONArray paid = o.optJSONArray("paidDates");
-                    if (paid != null) {
-                        for (int j = 0; j < paid.length(); j++) {
-                            s.paidDates.add(paid.getString(j));
-                        }
-                    }
+                    // paid count
+                    s.paidCount = o.optInt("paidCount", 0);
 
                     // installment fields
                     s.installmentType = o.optString("installmentType", "NONE");
