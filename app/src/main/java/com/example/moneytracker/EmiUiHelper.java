@@ -314,6 +314,7 @@ public class EmiUiHelper {
     // Detail dialog with dates + amounts + auto-tick using paidCount, shown as table
     public static void showEmiDetailsDialog(Fragment fragment, EmiScheme scheme) {
         Context ctx = fragment.requireContext();
+        Toast.makeText(ctx, "Rows: " + scheme.scheduleDates.size(), Toast.LENGTH_SHORT).show();
 
         TableLayout table = new TableLayout(ctx);
         table.setStretchAllColumns(true);
