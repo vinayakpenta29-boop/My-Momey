@@ -267,6 +267,7 @@ public class EmiUiHelper {
         try {
             c.setTime(df.parse(scheme.startDate));
         } catch (ParseException e) {
+            e.printStackTrace();
             return;
         }
         for (int i = 0; i < scheme.months; i++) {
@@ -314,7 +315,10 @@ public class EmiUiHelper {
     // Detail dialog with dates + amounts + auto-tick using paidCount, shown as table
     public static void showEmiDetailsDialog(Fragment fragment, EmiScheme scheme) {
         Context ctx = fragment.requireContext();
-        Toast.makeText(ctx, "Rows: " + scheme.scheduleDates.size(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(ctx,
+        "rows=" + scheme.scheduleDates.size()
+                + " start=" + scheme.startDate,
+        Toast.LENGTH_LONG).show();
 
         TableLayout table = new TableLayout(ctx);
         table.setStretchAllColumns(true);
