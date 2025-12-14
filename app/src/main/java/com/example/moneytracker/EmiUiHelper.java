@@ -325,9 +325,17 @@ public class EmiUiHelper {
         int pad = dpToPx(fragment, 8);
         table.setPadding(pad, pad, pad, pad);
 
+        table.setShowDividers(TableLayout.SHOW_DIVIDER_MIDDLE);
+        table.setDividerDrawable(new android.graphics.drawable.ColorDrawable(0xFFCCCCCC));
+        table.setDividerPadding(dpToPx(fragment, 1));
+
         // Header row
         TableRow header = new TableRow(ctx);
         int cellPad = dpToPx(fragment, 4);
+
+        header.setBackgroundColor(0xFFEEEEEE);
+        header.setShowDividers(TableRow.SHOW_DIVIDER_MIDDLE);
+        header.setDividerDrawable(new android.graphics.drawable.ColorDrawable(0xFFCCCCCC));
 
         TextView hStatus = new TextView(ctx);
         hStatus.setText("Status");
@@ -369,6 +377,10 @@ public class EmiUiHelper {
             boolean done = i < scheme.paidCount;
 
             TableRow row = new TableRow(ctx);
+
+            row.setBackgroundColor(0xFFFFFFFF);
+            row.setShowDividers(TableRow.SHOW_DIVIDER_MIDDLE);
+            row.setDividerDrawable(new android.graphics.drawable.ColorDrawable(0xFFCCCCCC));
 
             // Status cell
             TextView tvStatus = new TextView(ctx);
