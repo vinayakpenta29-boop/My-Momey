@@ -324,6 +324,8 @@ public class EmiUiHelper {
         table.setStretchAllColumns(true);
         int pad = dpToPx(fragment, 8);
         table.setPadding(pad, pad, pad, pad);
+        int cellPad = dpToPx(fragment, 4);
+        int lineColor = 0xFFCCCCCC;
 
         table.setShowDividers(TableLayout.SHOW_DIVIDER_MIDDLE);
         table.setDividerDrawable(new android.graphics.drawable.ColorDrawable(0xFFCCCCCC));
@@ -331,11 +333,9 @@ public class EmiUiHelper {
 
         // Header row
         TableRow header = new TableRow(ctx);
-        int cellPad = dpToPx(fragment, 4);
-
-        header.setBackgroundColor(0xFFEEEEEE);
+        header.setBackgroundColor(0xFFFFFFFF);
         header.setShowDividers(TableRow.SHOW_DIVIDER_MIDDLE);
-        header.setDividerDrawable(new android.graphics.drawable.ColorDrawable(0xFFCCCCCC));
+        header.setDividerDrawable(new android.graphics.drawable.ColorDrawable(lineColor));
 
         TextView hStatus = new TextView(ctx);
         hStatus.setText("Status");
