@@ -358,6 +358,7 @@ public class EmiUiHelper {
 
         for (int i = 0; i < scheme.scheduleDates.size(); i++) {
             String date = scheme.scheduleDates.get(i);
+
             int amount = 0;
             if ("FIXED".equals(scheme.installmentType)) {
                 amount = scheme.fixedAmount;
@@ -369,36 +370,34 @@ public class EmiUiHelper {
             boolean done = i < scheme.paidCount;
 
             TableRow row = new TableRow(ctx);
+            row.setPadding(0, dpToPx(fragment, 4), 0, dpToPx(fragment, 4));
 
             // Status cell
             TextView tvStatus = new TextView(ctx);
             tvStatus.setText(done ? "✅" : "☐");
-            if (done) tvStatus.setTextColor(0xFF2E7D32);
             tvStatus.setGravity(Gravity.CENTER);
             tvStatus.setPadding(cellPad, cellPad, cellPad, cellPad);
-            tvStatus.setLayoutParams(new TableRow.LayoutParams(cellParams));
             row.addView(tvStatus);
 
             // Date cell
             TextView tvDate = new TextView(ctx);
             tvDate.setText(date);
-            tvDate.setTypeface(null, android.graphics.Typeface.BOLD);
             tvDate.setGravity(Gravity.CENTER);
+            tvDate.setTypeface(null, android.graphics.Typeface.BOLD);
             tvDate.setPadding(cellPad, cellPad, cellPad, cellPad);
-            tvDate.setLayoutParams(new TableRow.LayoutParams(cellParams));
             row.addView(tvDate);
 
             // Amount cell
             TextView tvAmt = new TextView(ctx);
             tvAmt.setText(String.valueOf(amount));
-            tvAmt.setTypeface(null, android.graphics.Typeface.BOLD);
             tvAmt.setGravity(Gravity.CENTER);
+            tvAmt.setTypeface(null, android.graphics.Typeface.BOLD);
             tvAmt.setPadding(cellPad, cellPad, cellPad, cellPad);
-            tvAmt.setLayoutParams(new TableRow.LayoutParams(cellParams));
             row.addView(tvAmt);
 
             table.addView(row);
         }
+
 
         ScrollView scrollView = new ScrollView(ctx);
         scrollView.addView(table);
