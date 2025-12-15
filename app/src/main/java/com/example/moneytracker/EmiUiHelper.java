@@ -377,6 +377,7 @@ public class EmiUiHelper {
             tvStatus.setText(done ? "✅" : "☐");
             tvStatus.setGravity(Gravity.CENTER);
             tvStatus.setPadding(cellPad, cellPad, cellPad, cellPad);
+            tvStatus.setBackgroundResource(R.drawable.table_cell_border);
             row.addView(tvStatus);
 
             // Date cell
@@ -385,6 +386,7 @@ public class EmiUiHelper {
             tvDate.setGravity(Gravity.CENTER);
             tvDate.setTypeface(null, android.graphics.Typeface.BOLD);
             tvDate.setPadding(cellPad, cellPad, cellPad, cellPad);
+            
             row.addView(tvDate);
 
             // Amount cell
@@ -393,8 +395,9 @@ public class EmiUiHelper {
             tvAmt.setGravity(Gravity.CENTER);
             tvAmt.setTypeface(null, android.graphics.Typeface.BOLD);
             tvAmt.setPadding(cellPad, cellPad, cellPad, cellPad);
+            tvAmt.setBackgroundResource(R.drawable.table_cell_border);
             row.addView(tvAmt);
-
+            
             table.addView(row);
         }
 
