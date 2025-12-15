@@ -376,6 +376,15 @@ public class EmiUiHelper {
         }
 
         ScrollView scrollView = new ScrollView(ctx);
+        int sideMargin = dpToPx(fragment, 12);
+
+        ScrollView.LayoutParams svParams = new ScrollView.LayoutParams(
+                ScrollView.LayoutParams.MATCH_PARENT,
+                ScrollView.LayoutParams.WRAP_CONTENT
+        );
+        svParams.setMargins(sideMargin, sideMargin, sideMargin, sideMargin);
+        scrollView.setLayoutParams(svParams);
+
         scrollView.addView(table);
 
         new android.app.AlertDialog.Builder(ctx)
