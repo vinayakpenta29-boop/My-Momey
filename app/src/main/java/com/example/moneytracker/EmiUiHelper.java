@@ -334,6 +334,7 @@ public class EmiUiHelper {
         hStatus.setTypeface(null, android.graphics.Typeface.BOLD);
         hStatus.setGravity(Gravity.CENTER);
         hStatus.setPadding(cellPad, cellPad, cellPad, cellPad);
+        hStatus.setBackgroundResource(R.drawable.table_cell_border);
         header.addView(hStatus);
 
         TextView hDate = new TextView(ctx);
@@ -341,6 +342,7 @@ public class EmiUiHelper {
         hDate.setTypeface(null, android.graphics.Typeface.BOLD);
         hDate.setGravity(Gravity.CENTER);
         hDate.setPadding(cellPad, cellPad, cellPad, cellPad);
+        hDate.setBackgroundResource(R.drawable.table_cell_border);
         header.addView(hDate);
 
         TextView hAmt = new TextView(ctx);
@@ -348,6 +350,7 @@ public class EmiUiHelper {
         hAmt.setTypeface(null, android.graphics.Typeface.BOLD);
         hAmt.setGravity(Gravity.CENTER);
         hAmt.setPadding(cellPad, cellPad, cellPad, cellPad);
+        hAmt.setBackgroundResource(R.drawable.table_cell_border);
         header.addView(hAmt);
 
         table.addView(header);
@@ -386,7 +389,7 @@ public class EmiUiHelper {
             tvDate.setGravity(Gravity.CENTER);
             tvDate.setTypeface(null, android.graphics.Typeface.BOLD);
             tvDate.setPadding(cellPad, cellPad, cellPad, cellPad);
-            
+            tvDate.setBackgroundResource(R.drawable.table_cell_border);
             row.addView(tvDate);
 
             // Amount cell
