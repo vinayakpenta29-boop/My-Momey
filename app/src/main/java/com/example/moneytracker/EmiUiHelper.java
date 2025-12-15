@@ -355,6 +355,9 @@ public class EmiUiHelper {
 
             TableRow row = new TableRow(ctx);
             row.setPadding(0, 0, 0, 0); // 🔥 NO GAP BETWEEN ROWS
+            if (done) {
+            row.setBackgroundResource(R.drawable.bg_row_paid);
+            }
 
             // Sr No
             TextView tvSr = createCell(ctx, String.valueOf(i + 1), cellPad, true);
@@ -376,20 +379,19 @@ public class EmiUiHelper {
         }
 
         ScrollView scrollView = new ScrollView(ctx);
-        int sideMargin = dpToPx(fragment, 12);
-
-        ScrollView.LayoutParams svParams = new ScrollView.LayoutParams(
-                ScrollView.LayoutParams.MATCH_PARENT,
-                ScrollView.LayoutParams.WRAP_CONTENT
-        );
-        svParams.setMargins(sideMargin, sideMargin, sideMargin, sideMargin);
-        scrollView.setLayoutParams(svParams);
-
         scrollView.addView(table);
+        LinearLayout container = new LinearLayout(ctx);
+        container.setOrientation(LinearLayout.VERTICAL);
+
+        int dialogPadding = dpToPx(fragment, 16);
+        container.setPadding(dialogPadding, dialogPadding, dialogPadding, dialogPadding);
+        container.setBackgroundResource(R.drawable.bg_table_container);
+
+        container.addView(scrollView);
 
         new android.app.AlertDialog.Builder(ctx)
                 .setTitle("EMI: " + scheme.name)
-                .setView(scrollView)
+                .setView(container)
                 .setPositiveButton("Close", null)
                 .show();
     }
