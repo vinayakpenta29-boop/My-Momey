@@ -315,51 +315,32 @@ public class EmiUiHelper {
     // Detail dialog with dates + amounts + auto-tick using paidCount, shown as table
     public static void showEmiDetailsDialog(Fragment fragment, EmiScheme scheme) {
         Context ctx = fragment.requireContext();
-        Toast.makeText(ctx,
-        "rows=" + scheme.scheduleDates.size()
-                + " start=" + scheme.startDate,
-        Toast.LENGTH_LONG).show();
 
         TableLayout table = new TableLayout(ctx);
         table.setStretchAllColumns(true);
-        int pad = dpToPx(fragment, 8);
-        table.setPadding(pad, pad, pad, pad);
+        table.setShrinkAllColumns(true);
+        table.setPadding(0, 0, 0, 0);
+
         int cellPad = dpToPx(fragment, 4);
 
-        // Header row
+        // ================= HEADER ROW =================
         TableRow header = new TableRow(ctx);
-        
-        TextView hStatus = new TextView(ctx);
-        hStatus.setText("Status");
-        hStatus.setTypeface(null, android.graphics.Typeface.BOLD);
-        hStatus.setGravity(Gravity.CENTER);
-        hStatus.setPadding(cellPad, cellPad, cellPad, cellPad);
-        hStatus.setBackgroundResource(R.drawable.table_cell_border);
+
+        TextView hSr = createHeaderCell(ctx, "Sr.", cellPad);
+        TextView hStatus = createHeaderCell(ctx, "Status", cellPad);
+        TextView hDate = createHeaderCell(ctx, "Date", cellPad);
+        TextView hAmt = createHeaderCell(ctx, "Amount", cellPad);
+
+        header.addView(hSr);
         header.addView(hStatus);
-
-        TextView hDate = new TextView(ctx);
-        hDate.setText("Date");
-        hDate.setTypeface(null, android.graphics.Typeface.BOLD);
-        hDate.setGravity(Gravity.CENTER);
-        hDate.setPadding(cellPad, cellPad, cellPad, cellPad);
-        hDate.setBackgroundResource(R.drawable.table_cell_border);
         header.addView(hDate);
-
-        TextView hAmt = new TextView(ctx);
-        hAmt.setText("Amount");
-        hAmt.setTypeface(null, android.graphics.Typeface.BOLD);
-        hAmt.setGravity(Gravity.CENTER);
-        hAmt.setPadding(cellPad, cellPad, cellPad, cellPad);
-        hAmt.setBackgroundResource(R.drawable.table_cell_border);
         header.addView(hAmt);
 
         table.addView(header);
 
-        // Data rows
-        TableRow.LayoutParams cellParams = new TableRow.LayoutParams(
-                0, TableRow.LayoutParams.WRAP_CONTENT, 1f);
-
+        // ================= DATA ROWS =================
         for (int i = 0; i < scheme.scheduleDates.size(); i++) {
+
             String date = scheme.scheduleDates.get(i);
 
             int amount = 0;
@@ -373,37 +354,26 @@ public class EmiUiHelper {
             boolean done = i < scheme.paidCount;
 
             TableRow row = new TableRow(ctx);
-            row.setPadding(0, dpToPx(fragment, 4), 0, dpToPx(fragment, 4));
+            row.setPadding(0, 0, 0, 0); // 🔥 NO GAP BETWEEN ROWS
 
-            // Status cell
-            TextView tvStatus = new TextView(ctx);
-            tvStatus.setText(done ? "✅" : "☐");
-            tvStatus.setGravity(Gravity.CENTER);
-            tvStatus.setPadding(cellPad, cellPad, cellPad, cellPad);
-            tvStatus.setBackgroundResource(R.drawable.table_cell_border);
+            // Sr No
+            TextView tvSr = createCell(ctx, String.valueOf(i + 1), cellPad, true);
+            row.addView(tvSr);
+
+            // Status
+            TextView tvStatus = createCell(ctx, done ? "✅" : "☐", cellPad, false);
             row.addView(tvStatus);
 
-            // Date cell
-            TextView tvDate = new TextView(ctx);
-            tvDate.setText(date);
-            tvDate.setGravity(Gravity.CENTER);
-            tvDate.setTypeface(null, android.graphics.Typeface.BOLD);
-            tvDate.setPadding(cellPad, cellPad, cellPad, cellPad);
-            tvDate.setBackgroundResource(R.drawable.table_cell_border);
+            // Date
+            TextView tvDate = createCell(ctx, date, cellPad, true);
             row.addView(tvDate);
 
-            // Amount cell
-            TextView tvAmt = new TextView(ctx);
-            tvAmt.setText(String.valueOf(amount));
-            tvAmt.setGravity(Gravity.CENTER);
-            tvAmt.setTypeface(null, android.graphics.Typeface.BOLD);
-            tvAmt.setPadding(cellPad, cellPad, cellPad, cellPad);
-            tvAmt.setBackgroundResource(R.drawable.table_cell_border);
+            // Amount
+            TextView tvAmt = createCell(ctx, String.valueOf(amount), cellPad, true);
             row.addView(tvAmt);
-            
+
             table.addView(row);
         }
-
 
         ScrollView scrollView = new ScrollView(ctx);
         scrollView.addView(table);
@@ -414,4 +384,25 @@ public class EmiUiHelper {
                 .setPositiveButton("Close", null)
                 .show();
     }
+
+    private static TextView createHeaderCell(Context ctx, String text, int pad) {
+        TextView tv = new TextView(ctx);
+        tv.setText(text);
+        tv.setTypeface(null, android.graphics.Typeface.BOLD);
+        tv.setGravity(Gravity.CENTER);
+        tv.setPadding(pad, pad, pad, pad);
+        tv.setBackgroundResource(R.drawable.table_cell_border);
+        return tv;
+    }
+
+    private static TextView createCell(Context ctx, String text, int pad, boolean bold) {
+        TextView tv = new TextView(ctx);
+        tv.setText(text);
+        tv.setGravity(Gravity.CENTER);
+        tv.setPadding(pad, pad, pad, pad);
+        if (bold) tv.setTypeface(null, android.graphics.Typeface.BOLD);
+        tv.setBackgroundResource(R.drawable.table_cell_border);
+        return tv;
+    }
+
 }
