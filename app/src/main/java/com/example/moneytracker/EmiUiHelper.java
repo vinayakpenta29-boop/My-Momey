@@ -323,6 +323,10 @@ public class EmiUiHelper {
         table.setPadding(0, 0, 0, 0);
 
         int cellPad = dpToPx(fragment, 4);
+
+        int headerBg = Color.parseColor("#928E85"); // light gray header background
+        int headerText = Color.BLACK;               // header text color
+        
         
 
         // ================= HEADER ROW =================
@@ -332,6 +336,16 @@ public class EmiUiHelper {
         TextView hStatus = createHeaderCell(ctx, "Status", cellPad);
         TextView hDate = createHeaderCell(ctx, "Date", cellPad);
         TextView hAmt = createHeaderCell(ctx, "Amount", cellPad);
+
+        hSr.setBackgroundColor(headerBg);
+        hStatus.setBackgroundColor(headerBg);
+        hDate.setBackgroundColor(headerBg);
+        hAmt.setBackgroundColor(headerBg);
+
+        hSr.setTextColor(headerText);
+        hStatus.setTextColor(headerText);
+        hDate.setTextColor(headerText);
+        hAmt.setTextColor(headerText);
 
         header.addView(hSr);
         header.addView(hStatus);
