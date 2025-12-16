@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.graphics.Color;
 
 import androidx.fragment.app.Fragment;
 
@@ -361,18 +362,22 @@ public class EmiUiHelper {
 
             // Sr No
             TextView tvSr = createCell(ctx, String.valueOf(i + 1), cellPad, true);
+            if (done) tvSr.setTextColor(ctx.getColor(R.color.emi_paid_text));
             row.addView(tvSr);
 
             // Status
-            TextView tvStatus = createCell(ctx, done ? "✅" : "☐", cellPad, false);
+            TextView tvStatus = createCell(ctx, done ? "✅ " : "☐ ", cellPad, false);
+            if (done) tvStatus.setTextColor(ctx.getColor(R.color.emi_paid_text));
             row.addView(tvStatus);
 
             // Date
             TextView tvDate = createCell(ctx, date, cellPad, true);
+            if (done) tvDate.setTextColor(ctx.getColor(R.color.emi_paid_text));
             row.addView(tvDate);
 
             // Amount
             TextView tvAmt = createCell(ctx, String.valueOf(amount), cellPad, true);
+            if (done) tvAmt.setTextColor(ctx.getColor(R.color.emi_paid_text));
             row.addView(tvAmt);
 
             table.addView(row);
@@ -402,6 +407,7 @@ public class EmiUiHelper {
         tv.setTypeface(null, android.graphics.Typeface.BOLD);
         tv.setGravity(Gravity.CENTER);
         tv.setPadding(pad, pad, pad, pad);
+        tv.setTextColor(Color.BLACK);
         tv.setBackgroundResource(R.drawable.table_cell_border);
         return tv;
     }
@@ -411,6 +417,7 @@ public class EmiUiHelper {
         tv.setText(text);
         tv.setGravity(Gravity.CENTER);
         tv.setPadding(pad, pad, pad, pad);
+        tv.setTextColor(Color.BLACK);
         if (bold) tv.setTypeface(null, android.graphics.Typeface.BOLD);
         tv.setBackgroundResource(R.drawable.table_cell_border);
         return tv;
