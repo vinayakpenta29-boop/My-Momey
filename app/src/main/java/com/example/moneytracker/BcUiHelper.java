@@ -282,131 +282,128 @@ public class BcUiHelper {
     }
 
     // List BC schemes + open details
-    public static void showBcListDialog(Fragment fragment) {
+    public static void showBcDetailsDialog(Fragment fragment, BcScheme scheme) {
         Context ctx = fragment.requireContext();
-        HashMap<String, ArrayList<BcScheme>> bcMap = BcStore.getBcMap();
 
-        if (bcMap.isEmpty()) {
-            Toast.makeText(ctx, "No BC schemes added", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        TableLayout table = new TableLayout(ctx);
+        table.setStretchAllColumns(true);
+        table.setShrinkAllColumns(true);
+        table.setPadding(0, 0, 0, 0);
 
-        List<String> labels = new ArrayList<>();
-        List<BcScheme> schemes = new ArrayList<>();
-        for (String key : bcMap.keySet()) {
-            ArrayList<BcScheme> list = bcMap.get(key);
-            if (list == null) continue;
-            for (BcScheme s : list) {
-                String label = (key.equals("_GLOBAL_") ? "" : key + " - ") + s.name;
-                labels.add(label);
-                schemes.add(s);
+        int cellPad = dpToPx(fragment, 4);
+
+        int headerBg = Color.parseColor("#928E85"); // light gray header background
+        int headerText = Color.BLACK;               // header text color
+        
+        
+
+        // ================= HEADER ROW =================
+        TableRow header = new TableRow(ctx);
+
+        TextView hSr = createHeaderCell(ctx, "Sr.", cellPad);
+        TextView hStatus = createHeaderCell(ctx, "Status", cellPad);
+        TextView hDate = createHeaderCell(ctx, "Date", cellPad);
+        TextView hAmt = createHeaderCell(ctx, "Amount", cellPad);
+
+        hSr.setBackgroundColor(headerBg);
+        hStatus.setBackgroundColor(headerBg);
+        hDate.setBackgroundColor(headerBg);
+        hAmt.setBackgroundColor(headerBg);
+
+        hSr.setTextColor(headerText);
+        hStatus.setTextColor(headerText);
+        hDate.setTextColor(headerText);
+        hAmt.setTextColor(headerText);
+
+        header.addView(hSr);
+        header.addView(hStatus);
+        header.addView(hDate);
+        header.addView(hAmt);
+
+        table.addView(header);
+
+        // ================= DATA ROWS =================
+        for (int i = 0; i < scheme.scheduleDates.size(); i++) {
+
+            String date = scheme.scheduleDates.get(i);
+
+            int amount = 0;
+            if ("FIXED".equals(scheme.installmentType)) {
+                amount = scheme.fixedAmount;
+            } else if ("RANDOM".equals(scheme.installmentType)
+                    && i < scheme.monthlyAmounts.size()) {
+                amount = scheme.monthlyAmounts.get(i);
             }
+
+            boolean done = i < scheme.paidCount;
+
+            TableRow row = new TableRow(ctx);
+            row.setPadding(0, 0, 0, 0); // 🔥 NO GAP BETWEEN ROWS
+            if (done) {
+            row.setBackgroundResource(R.drawable.bg_row_paid);
+            }
+
+            // Sr No
+            TextView tvSr = createCell(ctx, String.valueOf(i + 1), cellPad, true);
+            if (done) tvSr.setTextColor(ctx.getColor(R.color.emi_paid_text));
+            row.addView(tvSr);
+
+            // Status
+            TextView tvStatus = createCell(ctx, done ? "✅ " : "☐ ", cellPad, false);
+            if (done) tvStatus.setTextColor(ctx.getColor(R.color.emi_paid_text));
+            row.addView(tvStatus);
+
+            // Date
+            TextView tvDate = createCell(ctx, date, cellPad, true);
+            if (done) tvDate.setTextColor(ctx.getColor(R.color.emi_paid_text));
+            row.addView(tvDate);
+
+            // Amount
+            TextView tvAmt = createCell(ctx, String.valueOf(amount), cellPad, true);
+            if (done) tvAmt.setTextColor(ctx.getColor(R.color.emi_paid_text));
+            row.addView(tvAmt);
+
+            table.addView(row);
         }
-        if (labels.isEmpty()) {
-            Toast.makeText(ctx, "No BC schemes added", Toast.LENGTH_SHORT).show();
-            return;
-        }
+
+        ScrollView scrollView = new ScrollView(ctx);
+        scrollView.addView(table);
+        LinearLayout container = new LinearLayout(ctx);
+        container.setOrientation(LinearLayout.VERTICAL);
+
+        int dialogPadding = dpToPx(fragment, 16);
+        container.setPadding(dialogPadding, dialogPadding, dialogPadding, dialogPadding);
+        container.setBackgroundResource(R.drawable.bg_table_container);
+
+        container.addView(scrollView);
 
         new android.app.AlertDialog.Builder(ctx)
-                .setTitle("BC Schemes")
-                .setItems(labels.toArray(new String[0]), (d, which) -> {
-                    BcScheme s = schemes.get(which);
-                    showBcDetailsDialog(fragment, s);
-                })
-                .setNegativeButton("Close", null)
+                .setTitle("BC: " + scheme.name)
+                .setView(container)
+                .setPositiveButton("Close", null)
                 .show();
     }
 
-        // Detail dialog with dates + amounts + auto-tick using paidCount
-        public static void showBcDetailsDialog(Fragment fragment, BcScheme scheme) {
-            Context ctx = fragment.requireContext();
+    private static TextView createHeaderCell(Context ctx, String text, int pad) {
+        TextView tv = new TextView(ctx);
+        tv.setText(text);
+        tv.setTypeface(null, android.graphics.Typeface.BOLD);
+        tv.setGravity(Gravity.CENTER);
+        tv.setPadding(pad, pad, pad, pad);
+        tv.setTextColor(Color.BLACK);
+        tv.setBackgroundResource(R.drawable.table_cell_border);
+        return tv;
+    }
 
-            TableLayout table = new TableLayout(ctx);
-            table.setStretchAllColumns(true);
-            int pad = dpToPx(fragment, 8);
-            table.setPadding(pad, pad, pad, pad);
+    private static TextView createCell(Context ctx, String text, int pad, boolean bold) {
+        TextView tv = new TextView(ctx);
+        tv.setText(text);
+        tv.setGravity(Gravity.CENTER);
+        tv.setPadding(pad, pad, pad, pad);
+        tv.setTextColor(Color.BLACK);
+        if (bold) tv.setTypeface(null, android.graphics.Typeface.BOLD);
+        tv.setBackgroundResource(R.drawable.table_cell_border);
+        return tv;
+    }
 
-            // Header row
-            TableRow header = new TableRow(ctx);
-            int cellPad = dpToPx(fragment, 4);
-
-            TextView hStatus = new TextView(ctx);
-            hStatus.setText("Status");
-            hStatus.setTypeface(null, android.graphics.Typeface.BOLD);
-            hStatus.setGravity(android.view.Gravity.CENTER);
-            hStatus.setPadding(cellPad, cellPad, cellPad, cellPad);
-            header.addView(hStatus);
-
-            TextView hDate = new TextView(ctx);
-            hDate.setText("Date");
-            hDate.setTypeface(null, android.graphics.Typeface.BOLD);
-            hDate.setGravity(android.view.Gravity.CENTER);
-            hDate.setPadding(cellPad, cellPad, cellPad, cellPad);
-            header.addView(hDate);
-
-            TextView hAmt = new TextView(ctx);
-            hAmt.setText("Amount");
-            hAmt.setTypeface(null, android.graphics.Typeface.BOLD);
-            hAmt.setGravity(android.view.Gravity.CENTER);
-            hAmt.setPadding(cellPad, cellPad, cellPad, cellPad);
-            header.addView(hAmt);
-
-            table.addView(header);
-
-            // Data rows
-            for (int i = 0; i < scheme.scheduleDates.size(); i++) {
-                String date = scheme.scheduleDates.get(i);
-                int amount = 0;
-                if ("FIXED".equals(scheme.installmentType)) {
-                    amount = scheme.fixedAmount;
-                } else if ("RANDOM".equals(scheme.installmentType)
-                     && i < scheme.monthlyAmounts.size()) {
-                    amount = scheme.monthlyAmounts.get(i);
-                }
-
-                boolean done = i < scheme.paidCount;
-
-                TableRow row = new TableRow(ctx);
-                TableRow.LayoutParams cellParams = new TableRow.LayoutParams(
-                        0, TableRow.LayoutParams.WRAP_CONTENT, 1f);
-
-                // Status cell
-                TextView tvStatus = new TextView(ctx);
-                tvStatus.setText(done ? "✅" : "☐");
-                if (done) tvStatus.setTextColor(0xFF2E7D32);
-                tvStatus.setGravity(android.view.Gravity.CENTER);
-                tvStatus.setPadding(cellPad, cellPad, cellPad, cellPad);
-                tvStatus.setLayoutParams(new TableRow.LayoutParams(cellParams));
-                row.addView(tvStatus);
-
-                // Date cell
-                TextView tvDate = new TextView(ctx);
-                tvDate.setText(date);
-                tvDate.setTypeface(null, android.graphics.Typeface.BOLD);
-                tvDate.setGravity(android.view.Gravity.CENTER);
-                tvDate.setPadding(cellPad, cellPad, cellPad, cellPad);
-                tvDate.setLayoutParams(new TableRow.LayoutParams(cellParams));
-                row.addView(tvDate);
-
-                // Amount cell
-                TextView tvAmt = new TextView(ctx);
-                tvAmt.setText(String.valueOf(amount));
-                tvAmt.setTypeface(null, android.graphics.Typeface.BOLD);
-                tvAmt.setGravity(android.view.Gravity.CENTER);
-                tvAmt.setPadding(cellPad, cellPad, cellPad, cellPad);
-                tvAmt.setLayoutParams(new TableRow.LayoutParams(cellParams));
-                row.addView(tvAmt);
-
-                table.addView(row);
-            }
-
-            ScrollView scrollView = new ScrollView(ctx);
-            scrollView.addView(table);
-
-            new android.app.AlertDialog.Builder(ctx)
-                    .setTitle("BC: " + scheme.name)
-                    .setView(scrollView)
-                    .setPositiveButton("Close", null)
-                    .show();
-        }
 }
