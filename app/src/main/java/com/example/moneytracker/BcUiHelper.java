@@ -291,7 +291,7 @@ public class BcUiHelper {
         int pad = dpToPx(fragment, 16);
         listLayout.setPadding(pad, pad, pad, pad);
 
-        HashMap<String, List<BcScheme>> all = BcStore.getAllSchemes();
+        HashMap<String, ArrayList<BcScheme>> bcMap = BcStore.getBcMap();
 
         if (all.isEmpty()) {
             TextView tv = new TextView(ctx);
