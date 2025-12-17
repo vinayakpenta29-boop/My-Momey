@@ -293,14 +293,14 @@ public class BcUiHelper {
 
         HashMap<String, ArrayList<BcScheme>> bcMap = BcStore.getBcMap();
 
-        if (all.isEmpty()) {
+        if (bcMap.isEmpty()) {
             TextView tv = new TextView(ctx);
             tv.setText("No BC schemes found");
             tv.setGravity(Gravity.CENTER);
             listLayout.addView(tv);
         } else {
-            for (String key : all.keySet()) {
-                List<BcScheme> list = all.get(key);
+            for (String key : bcMap.keySet()) {
+                ArrayList<BcScheme> list = bcMap.get(key);
                 if (list == null) continue;
 
                 for (BcScheme scheme : list) {
