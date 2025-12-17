@@ -113,14 +113,33 @@ public class BcUiHelper {
         // Two buttons
         LinearLayout instLayout = new LinearLayout(ctx);
         instLayout.setOrientation(LinearLayout.HORIZONTAL);
+        instLayout.setGravity(Gravity.CENTER_HORIZONTAL);
+
+        int btnMargin = dpToPx(fragment, 4);
+
+        LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+        0,
+        LinearLayout.LayoutParams.WRAP_CONTENT,
+        1f  // equal width
+        );
+        btnParams.setMargins(btnMargin, btnMargin, btnMargin, btnMargin);
 
         Button btnFixed = new Button(ctx);
-        btnFixed.setText("Fixed Amount Installment");
-        instLayout.addView(btnFixed);
+        btnFixed.setText("Fixed Amount");
+        btnFixed.setAllCaps(false);
+        btnFixed.setTextColor(Color.WHITE);
+        btnFixed.setBackgroundResource(R.drawable.btn_installment_green);
+        btnFixed.setLayoutParams(new LinearLayout.LayoutParams(btnParams));
 
         Button btnRandom = new Button(ctx);
-        btnRandom.setText("Random Amount Installment");
+        btnRandom.setText("Random Amount");
+        btnRandom.setAllCaps(false);
+        btnRandom.setTextColor(Color.WHITE);
+        btnRandom.setBackgroundResource(R.drawable.btn_installment_green);
+        btnRandom.setLayoutParams(new LinearLayout.LayoutParams(btnParams));
+
         instLayout.addView(btnRandom);
+        instLayout.addView(btnFixed);
 
         root.addView(instLayout);
 
@@ -135,7 +154,7 @@ public class BcUiHelper {
             input.setHint("Installment amount");
 
             new android.app.AlertDialog.Builder(ctx)
-                    .setTitle("Fixed Amount Installment")
+                    .setTitle("Fixed Amount")
                     .setView(input)
                     .setNegativeButton("Cancel", null)
                     .setPositiveButton("OK", (d, w) -> {
@@ -184,7 +203,7 @@ public class BcUiHelper {
             }
 
             new android.app.AlertDialog.Builder(ctx)
-                    .setTitle("Random Amount Installments")
+                    .setTitle("Random Amount")
                     .setView(scroll)
                     .setNegativeButton("Cancel", null)
                     .setPositiveButton("OK", (d, w) -> {
