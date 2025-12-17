@@ -282,46 +282,49 @@ public class BcUiHelper {
         }
     }
 
-    // ✅ ADD THIS BLOCK HERE ⬇⬇⬇
+    // List BC schemes (buttons) then open table dialog
     public static void showBcListDialog(Fragment fragment) {
-        Context ctx = fragment.requireContext();
+        Context ctx = fragment.requireContext();
 
-        LinearLayout listLayout = new LinearLayout(ctx);
-        listLayout.setOrientation(LinearLayout.VERTICAL);
-        int pad = dpToPx(fragment, 16);
-        listLayout.setPadding(pad, pad, pad, pad);
+        LinearLayout listLayout = new LinearLayout(ctx);
+        listLayout.setOrientation(LinearLayout.VERTICAL);
+        int pad = dpToPx(fragment, 16);
+        listLayout.setPadding(pad, pad, pad, pad);
 
-        HashMap<String, List<BcScheme>> all = BcStore.getAllSchemes();
+        HashMap<String, List<BcScheme>> all = BcStore.getAllSchemes();
 
-        if (all.isEmpty()) {
-            TextView tv = new TextView(ctx);
-            tv.setText("No BC schemes found");
-            tv.setGravity(Gravity.CENTER);
-            listLayout.addView(tv);
-        } else {
-            for (String key : all.keySet()) {
-                for (BcScheme scheme : all.get(key)) {
-                    Button btn = new Button(ctx);
-                    btn.setText(scheme.name);
-                    btn.setOnClickListener(v ->
-                            showBcDetailsDialog(fragment, scheme)
-                    );
-                    listLayout.addView(btn);
-                }
-            }
-        }
+        if (all.isEmpty()) {
+            TextView tv = new TextView(ctx);
+            tv.setText("No BC schemes found");
+            tv.setGravity(Gravity.CENTER);
+            listLayout.addView(tv);
+        } else {
+            for (String key : all.keySet()) {
+                List<BcScheme> list = all.get(key);
+                if (list == null) continue;
 
-        ScrollView scroll = new ScrollView(ctx);
-        scroll.addView(listLayout);
+                for (BcScheme scheme : list) {
+                    Button btn = new Button(ctx);
+                    btn.setText(scheme.name);
+                    btn.setOnClickListener(v ->
+                            showBcDetailsDialog(fragment, scheme)
+                    );
+                    listLayout.addView(btn);
+                }
+            }
+        }
 
-        new android.app.AlertDialog.Builder(ctx)
-                .setTitle("BC List")
-                .setView(scroll)
-                .setPositiveButton("Close", null)
-                .show();
+        ScrollView scroll = new ScrollView(ctx);
+        scroll.addView(listLayout);
+
+        new android.app.AlertDialog.Builder(ctx)
+                .setTitle("BC List")
+                .setView(scroll)
+                .setPositiveButton("Close", null)
+                .show();
     }
 
-    // List BC schemes + open details
+    // Detail dialog with dates + amounts + auto-tick using paidCount, shown as table
     public static void showBcDetailsDialog(Fragment fragment, BcScheme scheme) {
         Context ctx = fragment.requireContext();
 
@@ -332,10 +335,8 @@ public class BcUiHelper {
 
         int cellPad = dpToPx(fragment, 4);
 
-        int headerBg = Color.parseColor("#928E85"); // light gray header background
-        int headerText = Color.BLACK;               // header text color
-        
-        
+        int headerBg = Color.parseColor("#928E85");
+        int headerText = Color.BLACK;
 
         // ================= HEADER ROW =================
         TableRow header = new TableRow(ctx);
@@ -378,9 +379,9 @@ public class BcUiHelper {
             boolean done = i < scheme.paidCount;
 
             TableRow row = new TableRow(ctx);
-            row.setPadding(0, 0, 0, 0); // 🔥 NO GAP BETWEEN ROWS
+            row.setPadding(0, 0, 0, 0);
             if (done) {
-            row.setBackgroundResource(R.drawable.bg_row_paid);
+                row.setBackgroundResource(R.drawable.bg_row_paid);
             }
 
             // Sr No
@@ -445,5 +446,4 @@ public class BcUiHelper {
         tv.setBackgroundResource(R.drawable.table_cell_border);
         return tv;
     }
-
 }
