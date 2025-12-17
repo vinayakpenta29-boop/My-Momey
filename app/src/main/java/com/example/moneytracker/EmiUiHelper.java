@@ -107,17 +107,36 @@ public class EmiUiHelper {
         // Two buttons
         LinearLayout instLayout = new LinearLayout(ctx);
         instLayout.setOrientation(LinearLayout.HORIZONTAL);
+        instLayout.setGravity(Gravity.CENTER_HORIZONTAL);
+
+        int btnMargin = dpToPx(fragment, 4);
+
+        LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+        0,
+        LinearLayout.LayoutParams.WRAP_CONTENT,
+        1f  // equal width
+        );
+        btnParams.setMargins(btnMargin, btnMargin, btnMargin, btnMargin);
 
         Button btnFixed = new Button(ctx);
-        btnFixed.setText("Fixed Amount Installment");
-        instLayout.addView(btnFixed);
+        btnFixed.setText("Fixed Amount");
+        btnFixed.setAllCaps(false);
+        btnFixed.setTextColor(Color.WHITE);
+        btnFixed.setBackgroundResource(R.drawable.btn_installment_green);
+        btnFixed.setLayoutParams(new LinearLayout.LayoutParams(btnParams));
 
         Button btnRandom = new Button(ctx);
-        btnRandom.setText("Random Amount Installment");
+        btnRandom.setText("Random Amount");
+        btnRandom.setAllCaps(false);
+        btnRandom.setTextColor(Color.WHITE);
+        btnRandom.setBackgroundResource(R.drawable.btn_installment_green);
+        btnRandom.setLayoutParams(new LinearLayout.LayoutParams(btnParams));
+
         instLayout.addView(btnRandom);
+        instLayout.addView(btnFixed);
 
         root.addView(instLayout);
-
+        
         final String[] instType = new String[] { "NONE" };  // FIXED / RANDOM / NONE
         final int[] fixedAmountHolder = new int[] { 0 };
         final List<Integer> randomAmountsHolder = new ArrayList<>();
@@ -277,7 +296,7 @@ public class EmiUiHelper {
         }
     }
 
-    // List EMI schemes + open details
+    // List EMI schemes (buttons) then open table dialog
     public static void showEmiListDialog(Fragment fragment) {
         Context ctx = fragment.requireContext();
         HashMap<String, ArrayList<EmiScheme>> emiMap = EmiStore.getEmiMap();
@@ -287,29 +306,43 @@ public class EmiUiHelper {
             return;
         }
 
-        List<String> labels = new ArrayList<>();
-        List<EmiScheme> schemes = new ArrayList<>();
+        LinearLayout listLayout = new LinearLayout(ctx);
+        listLayout.setOrientation(LinearLayout.VERTICAL);
+        int pad = dpToPx(fragment, 16);
+        listLayout.setPadding(pad, pad, pad, pad);
+
+        // Build same kind of gray buttons as BC list
         for (String key : emiMap.keySet()) {
             ArrayList<EmiScheme> list = emiMap.get(key);
             if (list == null) continue;
-            for (EmiScheme s : list) {
-                String label = (key.equals("_GLOBAL_") ? "" : key + " - ") + s.name;
-                labels.add(label);
-                schemes.add(s);
+
+            for (EmiScheme scheme : list) {
+                String label = (key.equals("_GLOBAL_") ? "" : key + " - ") + scheme.name;
+
+                Button btn = new Button(ctx);
+                btn.setText(label);
+                btn.setAllCaps(true);
+
+                // Optional: match BC button style more closely
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+                lp.topMargin = dpToPx(fragment, 8);
+                btn.setLayoutParams(lp);
+
+                btn.setOnClickListener(v -> showEmiDetailsDialog(fragment, scheme));
+                listLayout.addView(btn);
             }
         }
-        if (labels.isEmpty()) {
-            Toast.makeText(ctx, "No EMI schemes added", Toast.LENGTH_SHORT).show();
-            return;
-        }
+
+        ScrollView scroll = new ScrollView(ctx);
+        scroll.addView(listLayout);
 
         new android.app.AlertDialog.Builder(ctx)
-                .setTitle("EMI Schemes")
-                .setItems(labels.toArray(new String[0]), (d, which) -> {
-                    EmiScheme s = schemes.get(which);
-                    showEmiDetailsDialog(fragment, s);
-                })
-                .setNegativeButton("Close", null)
+                .setTitle("EMI List")
+                .setView(scroll)
+                .setPositiveButton("Close", null)
                 .show();
     }
 
