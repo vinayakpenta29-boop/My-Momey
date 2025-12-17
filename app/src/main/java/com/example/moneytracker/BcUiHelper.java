@@ -282,6 +282,45 @@ public class BcUiHelper {
         }
     }
 
+    // ✅ ADD THIS BLOCK HERE ⬇⬇⬇
+    public static void showBcListDialog(Fragment fragment) {
+        Context ctx = fragment.requireContext();
+
+        LinearLayout listLayout = new LinearLayout(ctx);
+        listLayout.setOrientation(LinearLayout.VERTICAL);
+        int pad = dpToPx(fragment, 16);
+        listLayout.setPadding(pad, pad, pad, pad);
+
+        HashMap<String, List<BcScheme>> all = BcStore.getAllSchemes();
+
+        if (all.isEmpty()) {
+            TextView tv = new TextView(ctx);
+            tv.setText("No BC schemes found");
+            tv.setGravity(Gravity.CENTER);
+            listLayout.addView(tv);
+        } else {
+            for (String key : all.keySet()) {
+                for (BcScheme scheme : all.get(key)) {
+                    Button btn = new Button(ctx);
+                    btn.setText(scheme.name);
+                    btn.setOnClickListener(v ->
+                            showBcDetailsDialog(fragment, scheme)
+                    );
+                    listLayout.addView(btn);
+                }
+            }
+        }
+
+        ScrollView scroll = new ScrollView(ctx);
+        scroll.addView(listLayout);
+
+        new android.app.AlertDialog.Builder(ctx)
+                .setTitle("BC List")
+                .setView(scroll)
+                .setPositiveButton("Close", null)
+                .show();
+    }
+
     // List BC schemes + open details
     public static void showBcDetailsDialog(Fragment fragment, BcScheme scheme) {
         Context ctx = fragment.requireContext();
