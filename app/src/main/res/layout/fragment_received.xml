@@ -1,187 +1,195 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:background="#f0f6fb"
-    android:padding="16dp"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swipeRefreshReceived"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Top bar with global BC three-dots menu -->
     <LinearLayout
-        android:id="@+id/topBarReceived"
+        android:orientation="vertical"
+        android:background="#f0f6fb"
+        android:padding="16dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="right|center_vertical"
-        android:paddingBottom="4dp">
+        android:layout_height="match_parent">
 
-        <ImageButton
-            android:id="@+id/btnMoreTopReceived"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_more_vert"
-            android:contentDescription="More BC options"
-            android:tint="#000000" />
-    </LinearLayout>
-
-    <EditText
-        android:id="@+id/editTextName"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
-        android:background="@drawable/rounded_box_dark"
-        android:hint="Name"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:textColor="#000000"
-        android:textColorHint="#888CA7"
-        android:textSize="16sp" />
-
-    <EditText
-        android:id="@+id/editTextAmount"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginTop="0dp"
-        android:layout_marginBottom="4dp"
-        android:background="@drawable/rounded_box_dark"
-        android:hint="Amount"
-        android:inputType="number"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:textColor="#000000"
-        android:textColorHint="#888CA7"
-        android:textSize="16sp" />
-
-    <EditText
-        android:id="@+id/editTextNote"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginTop="0dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/rounded_box_dark"
-        android:hint="Note"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:textColor="#000000"
-        android:textColorHint="#888CA7"
-        android:textSize="16sp" />
-
-    <!-- Curved Category Box -->
-    <LinearLayout
-        android:id="@+id/categoryBox"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/balance_list_bg"
-        android:padding="8dp"
-        android:layout_marginBottom="8dp"
-        android:orientation="horizontal"
-        android:gravity="center">
-
-        <RadioGroup
-            android:id="@+id/radioGroupCategory"
-            android:layout_width="wrap_content"
+        <!-- Top bar with global BC three-dots menu -->
+        <LinearLayout
+            android:id="@+id/topBarReceived"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="right|center_vertical"
+            android:paddingBottom="4dp">
+
+            <ImageButton
+                android:id="@+id/btnMoreTopReceived"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_more_vert"
+                android:contentDescription="More BC options"
+                android:tint="#000000" />
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/editTextName"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/rounded_box_dark"
+            android:hint="Name"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:textColor="#000000"
+            android:textColorHint="#888CA7"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/editTextAmount"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="4dp"
+            android:background="@drawable/rounded_box_dark"
+            android:hint="Amount"
+            android:inputType="number"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:textColor="#000000"
+            android:textColorHint="#888CA7"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/editTextNote"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/rounded_box_dark"
+            android:hint="Note"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:textColor="#000000"
+            android:textColorHint="#888CA7"
+            android:textSize="16sp" />
+
+        <!-- Curved Category Box -->
+        <LinearLayout
+            android:id="@+id/categoryBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/balance_list_bg"
+            android:padding="8dp"
+            android:layout_marginBottom="8dp"
             android:orientation="horizontal"
             android:gravity="center">
 
-            <RadioButton
-                android:id="@+id/radioInterest"
+            <RadioGroup
+                android:id="@+id/radioGroupCategory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Interest (%)"
-                android:buttonTint="#448AFF"
-                android:textColor="#448AFF"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp" />
+                android:orientation="horizontal"
+                android:gravity="center">
 
-            <RadioButton
-                android:id="@+id/radioBC"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="BC"
-                android:buttonTint="#7B1FA2"
-                android:textColor="#7B1FA2"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp" />
+                <RadioButton
+                    android:id="@+id/radioInterest"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Interest (%)"
+                    android:buttonTint="#448AFF"
+                    android:textColor="#448AFF"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp" />
 
-            <RadioButton
-                android:id="@+id/radioEMI"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="EMI"
-                android:buttonTint="#388E3C"
-                android:textColor="#388E3C"
-                android:paddingLeft="8dp" />
-        </RadioGroup>
+                <RadioButton
+                    android:id="@+id/radioBC"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="BC"
+                    android:buttonTint="#7B1FA2"
+                    android:textColor="#7B1FA2"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp" />
+
+                <RadioButton
+                    android:id="@+id/radioEMI"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="EMI"
+                    android:buttonTint="#388E3C"
+                    android:textColor="#388E3C"
+                    android:paddingLeft="8dp" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <!-- Belongs to BC (shown only when BC category selected) -->
+        <TextView
+            android:id="@+id/tvBelongsToBc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Belongs to BC"
+            android:textSize="14sp"
+            android:textColor="#555555"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp"
+            android:visibility="gone" />
+
+        <Spinner
+            android:id="@+id/spinnerBelongsToBc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/rounded_box_dark"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:visibility="gone" />
+
+        <!-- Belongs to EMI (shown only when EMI category selected) -->
+        <TextView
+            android:id="@+id/tvBelongsToEmi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Belongs to EMI"
+            android:textSize="14sp"
+            android:textColor="#555555"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp"
+            android:visibility="gone" />
+
+        <Spinner
+            android:id="@+id/spinnerBelongsToEmi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/rounded_box_dark"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/buttonAdd"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/orange_rounded_button"
+            android:text="ADD"
+            android:textAllCaps="true"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="18sp" />
+
+        <!-- Curved box for names and balances -->
+        <LinearLayout
+            android:id="@+id/layoutBalanceList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/balance_list_bg"
+            android:padding="16dp"
+            android:layout_marginTop="8dp" />
+
     </LinearLayout>
 
-    <!-- Belongs to BC (shown only when BC category selected) -->
-    <TextView
-        android:id="@+id/tvBelongsToBc"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Belongs to BC"
-        android:textSize="14sp"
-        android:textColor="#555555"
-        android:paddingLeft="4dp"
-        android:paddingRight="4dp"
-        android:visibility="gone" />
-
-    <Spinner
-        android:id="@+id/spinnerBelongsToBc"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/rounded_box_dark"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:visibility="gone" />
-
-    <!-- Belongs to EMI (shown only when EMI category selected) -->
-    <TextView
-        android:id="@+id/tvBelongsToEmi"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Belongs to EMI"
-        android:textSize="14sp"
-        android:textColor="#555555"
-        android:paddingLeft="4dp"
-        android:paddingRight="4dp"
-        android:visibility="gone" />
-
-    <Spinner
-        android:id="@+id/spinnerBelongsToEmi"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/rounded_box_dark"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:visibility="gone" />
-
-    <Button
-        android:id="@+id/buttonAdd"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginTop="0dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/orange_rounded_button"
-        android:text="ADD"
-        android:textAllCaps="true"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"
-        android:textSize="18sp" />
-
-    <!-- Curved box for names and balances -->
-    <LinearLayout
-        android:id="@+id/layoutBalanceList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/balance_list_bg"
-        android:padding="16dp"
-        android:layout_marginTop="8dp" />
-
-</LinearLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
