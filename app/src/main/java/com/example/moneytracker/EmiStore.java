@@ -62,6 +62,38 @@ public class EmiStore {
         list.add(scheme);
     }
 
+    // ======== DELETE HELPERS ========
+
+    // Delete by key + object reference
+    public static void removeScheme(String key, EmiScheme scheme) {
+        if (scheme == null) return;
+        ArrayList<EmiScheme> list = emiMap.get(key);
+        if (list != null) {
+            list.remove(scheme);
+            if (list.isEmpty()) {
+                emiMap.remove(key);
+            }
+        }
+    }
+
+    // Delete by unique id (key|name)
+    public static void removeSchemeById(String emiId) {
+        if (TextUtils.isEmpty(emiId)) return;
+        for (String key : new ArrayList<>(emiMap.keySet())) {
+            ArrayList<EmiScheme> list = emiMap.get(key);
+            if (list == null) continue;
+            for (int i = list.size() - 1; i >= 0; i--) {
+                EmiScheme s = list.get(i);
+                if (emiId.equals(s.id)) {
+                    list.remove(i);
+                }
+            }
+            if (list.isEmpty()) {
+                emiMap.remove(key);
+            }
+        }
+    }
+
     // Helper: mark one installment as done for given scheme id
     // Just increase paidCount, so checkboxes tick in order.
     public static void markEmiInstallmentDone(String emiId, String unusedDate) {
@@ -124,7 +156,6 @@ public class EmiStore {
                 root.put(key, arr);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
         }
 
         SharedPreferences prefs =
@@ -183,7 +214,6 @@ public class EmiStore {
                 emiMap.put(key, list);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
         }
     }
 }
