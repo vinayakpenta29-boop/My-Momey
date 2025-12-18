@@ -39,25 +39,97 @@ public class EmiUiHelper {
         return Math.round(dp * density);
     }
 
-    // Optional separate EMI menu (you already use BC menu that calls EmiUiHelper)
+    // Optional separate EMI menu
     public static void showEmiManagerMenu(Fragment fragment, View anchor) {
         android.widget.PopupMenu menu =
                 new android.widget.PopupMenu(fragment.getContext(), anchor);
         menu.getMenu().add("Add EMI");
         menu.getMenu().add("View EMI List");
+        menu.getMenu().add("Delete EMI");   // NEW – direct delete from EMI menu
+
         menu.setOnMenuItemClickListener(item -> {
             String title = item.getTitle().toString();
             if ("Add EMI".equals(title)) {
                 showAddEmiDialog(fragment, null);
             } else if ("View EMI List".equals(title)) {
                 showEmiListDialog(fragment);
+            } else if ("Delete EMI".equals(title)) {
+                showDeleteEmiSchemesDialog(fragment);
             }
             return true;
         });
         menu.show();
     }
 
-    // Add EMI (with installment options, same as BC)
+    // ========= MULTI‑SELECT DELETE FOR EMI =========
+    public static void showDeleteEmiSchemesDialog(Fragment fragment) {
+        Context ctx = fragment.requireContext();
+        HashMap<String, ArrayList<EmiScheme>> emiMap = EmiStore.getEmiMap();
+
+        if (emiMap.isEmpty()) {
+            Toast.makeText(ctx, "No EMI schemes to delete", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<String> labels = new ArrayList<>();
+        List<String> keys = new ArrayList<>();
+        List<EmiScheme> schemes = new ArrayList<>();
+
+        // Flatten map to 1-D list with account name + scheme name
+        for (String key : emiMap.keySet()) {
+            ArrayList<EmiScheme> list = emiMap.get(key);
+            if (list == null) continue;
+
+            for (EmiScheme s : list) {
+                String label = (TextUtils.isEmpty(key) || "_GLOBAL_".equals(key))
+                        ? s.name
+                        : key + " - " + s.name;
+                labels.add(label);
+                schemes.add(s);
+                keys.add(key);
+            }
+        }
+
+        if (labels.isEmpty()) {
+            Toast.makeText(ctx, "No EMI schemes to delete", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String[] items = labels.toArray(new String[0]);
+        boolean[] checked = new boolean[items.length];
+        List<Integer> selectedIdx = new ArrayList<>();
+
+        new android.app.AlertDialog.Builder(ctx)
+                .setTitle("Select EMI schemes to delete")
+                .setMultiChoiceItems(items, checked, (dialog, which, isChecked) -> {
+                    if (isChecked) {
+                        if (!selectedIdx.contains(which)) selectedIdx.add(which);
+                    } else {
+                        selectedIdx.remove(Integer.valueOf(which));
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    if (selectedIdx.isEmpty()) return;
+
+                    for (int idx : selectedIdx) {
+                        String key = keys.get(idx);
+                        EmiScheme s = schemes.get(idx);
+                        ArrayList<EmiScheme> list = emiMap.get(key);
+                        if (list != null) {
+                            list.remove(s);
+                            if (list.isEmpty()) {
+                                emiMap.remove(key);
+                            }
+                        }
+                    }
+                    EmiStore.save(ctx);
+                    Toast.makeText(ctx, "EMI schemes deleted", Toast.LENGTH_SHORT).show();
+                })
+                .show();
+    }
+
+    // ========= ADD EMI (with installment options) =========
     public static void showAddEmiDialog(Fragment fragment, OnEmiAddedListener listener) {
         Context ctx = fragment.requireContext();
 
@@ -112,9 +184,9 @@ public class EmiUiHelper {
         int btnMargin = dpToPx(fragment, 4);
 
         LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
-        0,
-        LinearLayout.LayoutParams.WRAP_CONTENT,
-        1f  // equal width
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f  // equal width
         );
         btnParams.setMargins(btnMargin, btnMargin, btnMargin, btnMargin);
 
@@ -136,9 +208,9 @@ public class EmiUiHelper {
         instLayout.addView(btnFixed);
 
         root.addView(instLayout);
-        
-        final String[] instType = new String[] { "NONE" };  // FIXED / RANDOM / NONE
-        final int[] fixedAmountHolder = new int[] { 0 };
+
+        final String[] instType = new String[]{"NONE"};  // FIXED / RANDOM / NONE
+        final int[] fixedAmountHolder = new int[]{0};
         final List<Integer> randomAmountsHolder = new ArrayList<>();
 
         // Fixed dialog
@@ -311,7 +383,6 @@ public class EmiUiHelper {
         int pad = dpToPx(fragment, 16);
         listLayout.setPadding(pad, pad, pad, pad);
 
-        // Build same kind of gray buttons as BC list
         for (String key : emiMap.keySet()) {
             ArrayList<EmiScheme> list = emiMap.get(key);
             if (list == null) continue;
@@ -323,7 +394,6 @@ public class EmiUiHelper {
                 btn.setText(label);
                 btn.setAllCaps(true);
 
-                // Optional: match BC button style more closely
                 LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
@@ -357,12 +427,10 @@ public class EmiUiHelper {
 
         int cellPad = dpToPx(fragment, 4);
 
-        int headerBg = Color.parseColor("#928E85"); // light gray header background
-        int headerText = Color.BLACK;               // header text color
-        
-        
+        int headerBg = Color.parseColor("#928E85");
+        int headerText = Color.BLACK;
 
-        // ================= HEADER ROW =================
+        // HEADER ROW
         TableRow header = new TableRow(ctx);
 
         TextView hSr = createHeaderCell(ctx, "Sr.", cellPad);
@@ -387,7 +455,7 @@ public class EmiUiHelper {
 
         table.addView(header);
 
-        // ================= DATA ROWS =================
+        // DATA ROWS
         for (int i = 0; i < scheme.scheduleDates.size(); i++) {
 
             String date = scheme.scheduleDates.get(i);
@@ -403,9 +471,9 @@ public class EmiUiHelper {
             boolean done = i < scheme.paidCount;
 
             TableRow row = new TableRow(ctx);
-            row.setPadding(0, 0, 0, 0); // 🔥 NO GAP BETWEEN ROWS
+            row.setPadding(0, 0, 0, 0);
             if (done) {
-            row.setBackgroundResource(R.drawable.bg_row_paid);
+                row.setBackgroundResource(R.drawable.bg_row_paid);
             }
 
             // Sr No
