@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,6 +41,7 @@ public class GivenFragment extends Fragment {
     private LinearLayout layoutBalanceList;
     private RadioGroup categoryGroup;
     private ImageButton btnMoreTopGiven;
+    private SwipeRefreshLayout swipeRefreshGiven;   // NEW
 
     // Belongs-to-BC / EMI UI
     private TextView tvBelongsToBc;
@@ -142,11 +144,17 @@ public class GivenFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        loadMap(requireContext());
-        BcStore.load(requireContext());
-        EmiStore.load(requireContext());
-
         View v = inflater.inflate(R.layout.fragment_given, container, false);
+
+        // SwipeRefresh
+        swipeRefreshGiven = v.findViewById(R.id.swipeRefreshGiven);
+        if (swipeRefreshGiven != null) {
+            swipeRefreshGiven.setOnRefreshListener(() -> {
+                refreshTabData();
+                swipeRefreshGiven.setRefreshing(false);
+            });
+        }
+
         nameInput = v.findViewById(R.id.editTextName);
         amountInput = v.findViewById(R.id.editTextAmount);
         noteInput = v.findViewById(R.id.editTextNote);
@@ -171,8 +179,8 @@ public class GivenFragment extends Fragment {
             });
         }
 
-        updateBcSpinner();
-        updateEmiSpinner();
+        // Initial load
+        refreshTabData();
 
         categoryGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             private int lastCheckedId = -1;
@@ -215,6 +223,17 @@ public class GivenFragment extends Fragment {
 
         updateBalanceList();
         return v;
+    }
+
+    // Reload data + spinners + balance list
+    private void refreshTabData() {
+        loadMap(requireContext());
+        BcStore.load(requireContext());
+        EmiStore.load(requireContext());
+        updateBcSpinner();
+        updateEmiSpinner();
+        updateBalanceList();
+        notifySummaryUpdate();
     }
 
     // Fill spinner with all BC scheme ids (key|name)
@@ -301,7 +320,6 @@ public class GivenFragment extends Fragment {
                 }
                 givenMap.get(name).add(entry);
 
-                // If this is a BC / EMI entry linked to a scheme, mark installment done
                 if (!TextUtils.isEmpty(bcKey)) {
                     BcStore.markBcInstallmentDone(bcKey, dateStr);
                     BcStore.save(getContext());
@@ -430,7 +448,7 @@ public class GivenFragment extends Fragment {
             moreParams.setMargins(UiUtils.dpToPx(getContext(), 8), 0, 0, 0);
             morePerson.setLayoutParams(moreParams);
             morePerson.setImageResource(R.drawable.ic_more_vert);
-            morePerson.setColorFilter(0xFFCCCCCC);   // make three dots black
+            morePerson.setColorFilter(0xFFCCCCCC);
             row.addView(morePerson);
 
             morePerson.setOnClickListener(v -> showPersonMenu(v, name));
