@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,6 +41,7 @@ public class ReceivedFragment extends Fragment {
     private RadioGroup categoryGroup;
     private LinearLayout layoutBalanceList;
     private ImageButton btnMoreTopReceived;
+    private SwipeRefreshLayout swipeRefreshReceived;   // NEW
 
     // Belongs-to-BC / EMI UI
     private TextView tvBelongsToBc;
@@ -142,11 +144,17 @@ public class ReceivedFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        loadMap(requireContext());
-        BcStore.load(requireContext());
-        EmiStore.load(requireContext());
-
         View v = inflater.inflate(R.layout.fragment_received, container, false);
+
+        // SwipeRefresh
+        swipeRefreshReceived = v.findViewById(R.id.swipeRefreshReceived);
+        if (swipeRefreshReceived != null) {
+            swipeRefreshReceived.setOnRefreshListener(() -> {
+                refreshTabData();
+                swipeRefreshReceived.setRefreshing(false);
+            });
+        }
+
         nameInput = v.findViewById(R.id.editTextName);
         amountInput = v.findViewById(R.id.editTextAmount);
         noteInput = v.findViewById(R.id.editTextNote);
@@ -171,8 +179,8 @@ public class ReceivedFragment extends Fragment {
             });
         }
 
-        updateBcSpinner();
-        updateEmiSpinner();
+        // Initial load
+        refreshTabData();
 
         categoryGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             private int lastCheckedId = -1;
@@ -215,6 +223,17 @@ public class ReceivedFragment extends Fragment {
 
         updateBalanceList();
         return v;
+    }
+
+    // Reload data and UI for this tab
+    private void refreshTabData() {
+        loadMap(requireContext());
+        BcStore.load(requireContext());
+        EmiStore.load(requireContext());
+        updateBcSpinner();
+        updateEmiSpinner();
+        updateBalanceList();
+        notifySummaryUpdate();
     }
 
     private void updateBcSpinner() {
@@ -427,7 +446,7 @@ public class ReceivedFragment extends Fragment {
             moreParams.setMargins(UiUtils.dpToPx(getContext(), 8), 0, 0, 0);
             morePerson.setLayoutParams(moreParams);
             morePerson.setImageResource(R.drawable.ic_more_vert);
-            morePerson.setColorFilter(0xFFCCCCCC);   // make three dots black
+            morePerson.setColorFilter(0xFFCCCCCC);
             row.addView(morePerson);
 
             morePerson.setOnClickListener(v -> showPersonMenu(v, name));
