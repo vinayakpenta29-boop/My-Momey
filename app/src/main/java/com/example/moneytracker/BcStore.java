@@ -62,6 +62,38 @@ public class BcStore {
         list.add(scheme);
     }
 
+    // ======== DELETE HELPERS ========
+
+    // Delete by key + object reference (used from UI when you already know both)
+    public static void removeScheme(String key, BcScheme scheme) {
+        if (scheme == null) return;
+        ArrayList<BcScheme> list = bcMap.get(key);
+        if (list != null) {
+            list.remove(scheme);
+            if (list.isEmpty()) {
+                bcMap.remove(key);
+            }
+        }
+    }
+
+    // Delete by unique id (key|name). Useful if you only have bcId.
+    public static void removeSchemeById(String bcId) {
+        if (TextUtils.isEmpty(bcId)) return;
+        for (String key : new ArrayList<>(bcMap.keySet())) {
+            ArrayList<BcScheme> list = bcMap.get(key);
+            if (list == null) continue;
+            for (int i = list.size() - 1; i >= 0; i--) {
+                BcScheme s = list.get(i);
+                if (bcId.equals(s.id)) {
+                    list.remove(i);
+                }
+            }
+            if (list.isEmpty()) {
+                bcMap.remove(key);
+            }
+        }
+    }
+
     // Helper: mark one installment as done for given scheme id
     // Just increase paidCount, so checkboxes tick in order.
     public static void markBcInstallmentDone(String bcId, String unusedDate) {
