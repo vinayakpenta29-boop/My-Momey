@@ -39,7 +39,7 @@ public class BcUiHelper {
         return Math.round(dp * density);
     }
 
-    // Public entry: show BC + EMI main menu for any fragment
+    // ========= MAIN MENU (BC + EMI + Delete) =========
     public static void showBcManagerMenu(Fragment fragment, View anchor) {
         android.widget.PopupMenu menu =
                 new android.widget.PopupMenu(fragment.getContext(), anchor);
@@ -47,6 +47,8 @@ public class BcUiHelper {
         menu.getMenu().add("View BC List");
         menu.getMenu().add("Add EMI");
         menu.getMenu().add("View EMI List");
+        menu.getMenu().add("Delete");   // NEW
+
         menu.setOnMenuItemClickListener(item -> {
             String title = item.getTitle().toString();
             if ("Add BC".equals(title)) {
@@ -57,13 +59,105 @@ public class BcUiHelper {
                 EmiUiHelper.showAddEmiDialog(fragment, null);
             } else if ("View EMI List".equals(title)) {
                 EmiUiHelper.showEmiListDialog(fragment);
+            } else if ("Delete".equals(title)) {
+                // First choose BC or EMI
+                showDeleteChooserDialog(fragment);
             }
             return true;
         });
         menu.show();
     }
 
-    // Add BC (with installment options)
+    // ========= DELETE CHOOSER (BC or EMI) =========
+    public static void showDeleteChooserDialog(Fragment fragment) {
+        Context ctx = fragment.requireContext();
+        String[] types = {"BC", "EMI"};
+
+        new android.app.AlertDialog.Builder(ctx)
+                .setTitle("Delete Schemes")
+                .setItems(types, (d, which) -> {
+                    if (which == 0) {
+                        // BC
+                        showDeleteBcSchemesDialog(fragment);
+                    } else {
+                        // EMI
+                        EmiUiHelper.showDeleteEmiSchemesDialog(fragment);
+                    }
+                })
+                .setNegativeButton("Close", null)
+                .show();
+    }
+
+    // ========= MULTI‑SELECT DELETE FOR BC =========
+    public static void showDeleteBcSchemesDialog(Fragment fragment) {
+        Context ctx = fragment.requireContext();
+        HashMap<String, ArrayList<BcScheme>> bcMap = BcStore.getBcMap();
+
+        if (bcMap.isEmpty()) {
+            Toast.makeText(ctx, "No BC schemes to delete", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<String> labels = new ArrayList<>();
+        List<String> keys = new ArrayList<>();
+        List<BcScheme> schemes = new ArrayList<>();
+
+        // Flatten map to 1-D list with account name + scheme name
+        for (String key : bcMap.keySet()) {
+            ArrayList<BcScheme> list = bcMap.get(key);
+            if (list == null) continue;
+
+            for (BcScheme s : list) {
+                String label = (TextUtils.isEmpty(key) || "_GLOBAL_".equals(key))
+                        ? s.name
+                        : key + " - " + s.name;
+                labels.add(label);
+                schemes.add(s);
+                keys.add(key);
+            }
+        }
+
+        if (labels.isEmpty()) {
+            Toast.makeText(ctx, "No BC schemes to delete", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String[] items = labels.toArray(new String[0]);
+        boolean[] checked = new boolean[items.length];
+        List<Integer> selectedIdx = new ArrayList<>();
+
+        new android.app.AlertDialog.Builder(ctx)
+                .setTitle("Select BC schemes to delete")
+                .setMultiChoiceItems(items, checked, (dialog, which, isChecked) -> {
+                    if (isChecked) {
+                        if (!selectedIdx.contains(which)) selectedIdx.add(which);
+                    } else {
+                        selectedIdx.remove(Integer.valueOf(which));
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    if (selectedIdx.isEmpty()) return;
+
+                    // Delete selected schemes
+                    for (int idx : selectedIdx) {
+                        String key = keys.get(idx);
+                        BcScheme s = schemes.get(idx);
+                        ArrayList<BcScheme> list = bcMap.get(key);
+                        if (list != null) {
+                            list.remove(s);
+                            if (list.isEmpty()) {
+                                bcMap.remove(key);
+                            }
+                        }
+                    }
+                    BcStore.save(ctx);
+                    Toast.makeText(ctx, "BC schemes deleted", Toast.LENGTH_SHORT).show();
+                })
+                .show();
+    }
+
+    // ========= ADD BC (with installment options) =========
     public static void showAddBcDialog(Fragment fragment, OnBcAddedListener listener) {
         Context ctx = fragment.requireContext();
 
@@ -118,9 +212,9 @@ public class BcUiHelper {
         int btnMargin = dpToPx(fragment, 4);
 
         LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
-        0,
-        LinearLayout.LayoutParams.WRAP_CONTENT,
-        1f  // equal width
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f  // equal width
         );
         btnParams.setMargins(btnMargin, btnMargin, btnMargin, btnMargin);
 
@@ -285,7 +379,7 @@ public class BcUiHelper {
                 .show();
     }
 
-    // Generate monthly schedule
+    // ========= SCHEDULE GENERATION =========
     public static void generateBcSchedule(BcScheme scheme) {
         scheme.scheduleDates.clear();
         SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -301,7 +395,7 @@ public class BcUiHelper {
         }
     }
 
-    // List BC schemes (buttons) then open table dialog
+    // ========= LIST BC SCHEMES =========
     public static void showBcListDialog(Fragment fragment) {
         Context ctx = fragment.requireContext();
 
@@ -343,7 +437,7 @@ public class BcUiHelper {
                 .show();
     }
 
-    // Detail dialog with dates + amounts + auto-tick using paidCount, shown as table
+    // ========= DETAILS TABLE =========
     public static void showBcDetailsDialog(Fragment fragment, BcScheme scheme) {
         Context ctx = fragment.requireContext();
 
@@ -357,7 +451,7 @@ public class BcUiHelper {
         int headerBg = Color.parseColor("#928E85");
         int headerText = Color.BLACK;
 
-        // ================= HEADER ROW =================
+        // HEADER ROW
         TableRow header = new TableRow(ctx);
 
         TextView hSr = createHeaderCell(ctx, "Sr.", cellPad);
@@ -382,7 +476,7 @@ public class BcUiHelper {
 
         table.addView(header);
 
-        // ================= DATA ROWS =================
+        // DATA ROWS
         for (int i = 0; i < scheme.scheduleDates.size(); i++) {
 
             String date = scheme.scheduleDates.get(i);
